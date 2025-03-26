@@ -1,41 +1,47 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Training Board
 
-## Getting Started
+トレーニングに関する質問と回答を共有するプラットフォーム
 
-First, run the development server:
+## 機能
+
+- ユーザー認証（登録・ログイン）
+- 質問の投稿・編集・削除
+- 回答の投稿・編集・削除
+- AIによる質問と回答の自動生成
+- タグによる質問の分類
+- 投票システム
+
+## 技術スタック
+
+- Next.js
+- TypeScript
+- MongoDB
+- Chakra UI
+- Google Gemini AI
+
+## 開発環境のセットアップ
 
 ```bash
+# 依存関係のインストール
+npm install
+
+# 開発サーバーの起動
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 環境変数
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+以下の環境変数を`.env`ファイルに設定してください：
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+MONGODB_URI=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GEMINI_API_KEY=
+```
 
-## Learn More
+## デプロイ
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# training-board
-２つめ
->>>>>>> 943114afbfc58a08c381c50c0d7a035bd96b16cb
+このプロジェクトはVercelにデプロイされています。
