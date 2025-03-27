@@ -9,7 +9,7 @@ import {
   Textarea,
   VStack,
   useToast,
-  Switch,
+  Switch as ChakraSwitch,
 } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -62,7 +62,7 @@ const AnswerForm = ({ questionId }: AnswerFormProps) => {
   return (
     <Box maxW="2xl" mx="auto" mt={8}>
       <form onSubmit={handleSubmit}>
-        <VStack spacing={4}>
+        <VStack gap={4}>
           <FormControl isRequired>
             <FormLabel>回答内容</FormLabel>
             <Textarea
@@ -77,7 +77,7 @@ const AnswerForm = ({ questionId }: AnswerFormProps) => {
             <FormLabel mb="0">
               AIを使用して回答を生成する
             </FormLabel>
-            <Switch
+            <ChakraSwitch
               isChecked={useAI}
               onChange={(e) => setUseAI(e.target.checked)}
             />

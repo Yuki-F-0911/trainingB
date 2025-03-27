@@ -4,6 +4,7 @@ import "./globals.css";
 import NextAuthProvider from "./components/auth/NextAuthProvider";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
+import { Providers } from './providers';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,13 +21,15 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={`${inter.className} flex flex-col min-h-screen`}>
-        <NextAuthProvider>
-          <Header />
-          <main className="flex-grow container mx-auto px-4 py-8">
-            {children}
-          </main>
-          <Footer />
-        </NextAuthProvider>
+        <Providers>
+          <NextAuthProvider>
+            <Header />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              {children}
+            </main>
+            <Footer />
+          </NextAuthProvider>
+        </Providers>
       </body>
     </html>
   );
