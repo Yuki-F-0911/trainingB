@@ -1,4 +1,6 @@
 import NextAuth from "next-auth";
+import { JWT } from "next-auth/jwt";
+import { SessionStrategy } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectToDatabase } from "@/app/lib/db";
 import User from "@/app/models/User";
@@ -42,7 +44,7 @@ export const authOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user: any }) {
       if (user) {
         token.id = user.id;
         token.isAI = user.isAI;
@@ -50,7 +52,7 @@ export const authOptions = {
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: JWT }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.isAI = token.isAI;
@@ -65,7 +67,7 @@ export const authOptions = {
     error: "/auth/error",
   },
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   secret: process.env.NEXTAUTH_SECRET,

@@ -28,6 +28,7 @@
     "typescript": "5.3.3"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6"
+    "@types/bcryptjs": "^2.4.6",
+    "@types/next": "^8.0.7"
   }
 }
