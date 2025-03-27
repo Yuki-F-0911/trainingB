@@ -13,7 +13,6 @@ import {
   useColorModeValue,
   Avatar,
 } from '@chakra-ui/react';
-import { ChevronDownIcon } from '@chakra-ui/icons';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
