@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
 }
 
 model User {
-  id        String    @id @default(uuid())
+  id        String    @id @default(uuid()) @map("_id")
   email     String    @unique
   name      String
   password  String
@@ -19,7 +19,7 @@ model User {
 }
 
 model Question {
-  id            String    @id @default(uuid())
+  id            String    @id @default(uuid()) @map("_id")
   title         String
   content       String
   userId        String
@@ -32,7 +32,7 @@ model Question {
 }
 
 model Answer {
-  id            String    @id @default(uuid())
+  id            String    @id @default(uuid()) @map("_id")
   content       String
   userId        String
   user          User      @relation(fields: [userId], references: [id])
