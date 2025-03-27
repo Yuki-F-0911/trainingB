@@ -6,15 +6,20 @@ const UserSchema = new Schema(
     name: {
       type: String,
       required: true,
+      minlength: [3, 'ユーザー名は3文字以上である必要があります'],
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
+      match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, '有効なメールアドレスを入力してください'],
     },
     password: {
       type: String,
       required: true,
+      minlength: [6, 'パスワードは6文字以上である必要があります'],
     },
     isAI: {
       type: Boolean,
