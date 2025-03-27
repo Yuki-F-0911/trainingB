@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/db";
 import User from "@/app/models/User";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,18 +27,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // パスワードのハッシュ化
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // ユーザー作成
     const user = new User({
       name,
       email,
-      password,
+      password: hashedPassword,
       isAI: false,
     });
 
     await user.save();
 
     return NextResponse.json(
-      { message: "ユーザー登録が完了しました", userId: user._id },
+      { 
+        message: "ユーザー登録が完了しました", 
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+        }
+      },
       { status: 201 }
     );
   } catch (error) {
