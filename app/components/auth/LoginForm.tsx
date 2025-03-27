@@ -36,7 +36,7 @@ const LoginForm = () => {
         return;
       }
       
-      router.push('/dashboard');
+      router.push('/');
       router.refresh();
     } catch (err) {
       console.error('ログインエラー:', err);
