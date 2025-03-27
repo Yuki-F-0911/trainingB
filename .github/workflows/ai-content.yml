@@ -1,0 +1,19 @@
+name: Generate AI Content
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # 6時間ごとに実行
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Webhook
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        run: |
+          curl -X POST ${APP_URL}/api/ai/webhook \
+            -H "Content-Type: application/json" \
+            -d "{\"secret\": \"${WEBHOOK_SECRET}\"}" 
