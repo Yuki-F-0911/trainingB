@@ -18,18 +18,25 @@ if (!global.mongoose) {
 }
 
 export async function connectToDatabase() {
-  if (cached.conn) {
+  try {
+    if (cached.conn) {
+      return cached.conn;
+    }
+
+    if (!cached.promise) {
+      const opts = {
+        bufferCommands: false,
+      };
+
+      cached.promise = mongoose.connect(MONGODB_URI, opts);
+    }
+
+    cached.conn = await cached.promise;
+    console.log('データベース接続成功');
     return cached.conn;
+  } catch (error) {
+    console.error('データベース接続エラー:', error);
+    cached.promise = null;
+    throw error;
   }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts);
-  }
-
-  cached.conn = await cached.promise;
-  return cached.conn;
 } 
