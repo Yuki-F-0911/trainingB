@@ -1,5 +1,5 @@
-import QuestionList from '@/app/components/questions/QuestionList';
-import Link from 'next/link';
+import { Suspense } from 'react';
+import QuestionsContent from './QuestionsContent';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -9,18 +9,8 @@ export const metadata: Metadata = {
 
 export default function QuestionsPage() {
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">質問一覧</h1>
-        <Link
-          href="/questions/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-        >
-          質問する
-        </Link>
-      </div>
-      
-      <QuestionList />
-    </div>
+    <Suspense fallback={<div>読み込み中...</div>}>
+      <QuestionsContent />
+    </Suspense>
   );
 } 
