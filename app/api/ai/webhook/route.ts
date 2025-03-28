@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         content: contentMatch[1].trim(),
         isAIGenerated: true,
         personality: personality.name,
-        userId: 'system', // システム生成の質問
+        userId: "00000000-0000-0000-0000-000000000000", // 実際のAIユーザーIDを指定
       },
     });
 
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         isAIGenerated: true,
         personality: personality.name,
         questionId: question.id,
-        userId: 'system', // システム生成の回答
+        userId: "00000000-0000-0000-0000-000000000000", // 実際のAIユーザーIDを指定
       },
     });
 
