@@ -8,6 +8,14 @@ const UserSchema = new Schema(
       required: true,
       minlength: [3, 'ユーザー名は3文字以上である必要があります'],
     },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      default: function() {
+        return this.name; // nameフィールドをデフォルトとして使用
+      },
+    },
     email: {
       type: String,
       required: true,
