@@ -12,9 +12,6 @@ const UserSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      default: function() {
-        return this.name; // nameフィールドをデフォルトとして使用
-      },
     },
     email: {
       type: String,
