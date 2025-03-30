@@ -20,11 +20,24 @@ export default function QuestionsPage() {
       setLoading(true);
       setError('');
       console.log(`質問データを取得中... ページ: ${page}`);
+      
+      // 公式APIサーバーから質問データを取得
       const response = await axios.get(`/questions?page=${page}&limit=9`);
       console.log('質問データ取得結果:', response.data);
-      setQuestions(response.data.questions || []);
-      setTotalPages(response.data.totalPages || 1);
-      setCurrentPage(page);
+      
+      // APIレスポンスを適切に処理
+      if (response.data && Array.isArray(response.data.questions)) {
+        setQuestions(response.data.questions);
+        setTotalPages(response.data.totalPages || 1);
+        setCurrentPage(page);
+      } else if (response.data && Array.isArray(response.data)) {
+        // APIがフラットな配列を返す場合の処理
+        setQuestions(response.data);
+        setTotalPages(Math.ceil(response.data.length / 9));
+        setCurrentPage(page);
+      } else {
+        throw new Error('予期しない応答形式です');
+      }
     } catch (error: any) {
       console.error('質問取得エラー:', error);
       setError('質問の取得に失敗しました。再度お試しください。');
@@ -36,6 +49,38 @@ export default function QuestionsPage() {
         isClosable: true,
       });
     } finally {
+      setLoading(false);
+    }
+  };
+
+  // 手動でAI質問を生成する関数
+  const generateAIQuestion = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.post('/ai/webhook', {
+        secret: process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'zf&c;IXyflo/b'
+      });
+      
+      if (response.data && response.data.questionId) {
+        toast({
+          title: '成功',
+          description: 'AI質問が生成されました。更新して確認してください。',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        });
+        // 最新のデータを取得
+        fetchQuestions(1);
+      }
+    } catch (error: any) {
+      console.error('AI質問生成エラー:', error);
+      toast({
+        title: 'エラー',
+        description: error.response?.data?.message || error.message || 'AI質問の生成に失敗しました',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
       setLoading(false);
     }
   };
@@ -81,7 +126,14 @@ export default function QuestionsPage() {
     <Container maxW="container.xl" py={8}>
       <Box mb={8} display="flex" justifyContent="space-between" alignItems="center">
         <Heading as="h1">質問一覧</Heading>
-        <Button colorScheme="blue" onClick={() => fetchQuestions(currentPage)}>更新</Button>
+        <HStack spacing={3}>
+          <Button colorScheme="purple" onClick={generateAIQuestion} isLoading={loading}>
+            AI質問生成
+          </Button>
+          <Button colorScheme="blue" onClick={() => fetchQuestions(currentPage)}>
+            更新
+          </Button>
+        </HStack>
       </Box>
 
       {questions.length === 0 ? (
