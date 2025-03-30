@@ -26,35 +26,17 @@ app.use((req, res, next) => {
 });
 
 // CORS設定 - クライアントドメインを明示的に許可
-app.use(function(req, res, next) {
-  const allowedOrigins = [
+app.use(cors({
+  origin: [
     'https://training-board-client2.vercel.app',
     'https://training-board-client.vercel.app',
     'https://training-board.vercel.app',
     'http://localhost:3000'
-  ];
-  
-  const origin = req.headers.origin;
-  console.log(`CORSリクエスト: Origin=${origin}, Path=${req.path}, Method=${req.method}`);
-  
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else {
-    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
-  }
-  
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-
-  // プリフライトリクエストへの対応
-  if (req.method === 'OPTIONS') {
-    console.log('プリフライトリクエスト検出:', origin);
-    return res.status(200).end();
-  }
-
-  next();
-});
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  credentials: true
+}));
 
 // Content-Type設定
 app.use(express.json());
