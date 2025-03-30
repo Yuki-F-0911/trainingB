@@ -101,45 +101,47 @@ app.post('/api/ai/webhook', async (req, res) => {
       });
     }
 
-    console.log('Webhook認証成功 - クライアントAPIへ転送中');
+    console.log('Webhook認証成功 - 処理を開始します');
     
-    // 成功したら、クライアント側のWebhookエンドポイントに転送
+    // 成功レスポンスを直接返す（クライアント側の処理を待たない）
+    res.json({ 
+      message: 'Webhook処理を受け付けました。バックグラウンドで処理を実行します。',
+      timestamp: new Date().toISOString() 
+    });
+    
+    // バックグラウンドでクライアント側Webhookを呼び出す試行
     try {
       const clientUrl = process.env.CLIENT_URL || 'https://training-b.vercel.app';
       const clientWebhookUrl = `${clientUrl}/api/ai/webhook`;
       
       console.log(`クライアントWebhookへの転送: ${clientWebhookUrl}`);
       
+      // タイムアウトを設定して確実にレスポンスを得る
       const clientResponse = await axios.post(clientWebhookUrl, { 
         secret: process.env.WEBHOOK_SECRET 
       }, {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 10000 // 10秒でタイムアウト
       });
       
       console.log('クライアント応答:', clientResponse.data);
-      
-      res.json({ 
-        message: 'Webhook処理完了: クライアント側で質問と回答が生成されました',
-        clientResponse: clientResponse.data,
-        timestamp: new Date().toISOString() 
-      });
+      // レスポンスはすでに返しているので、ここでは何もしない
     } catch (clientError) {
-      console.error('クライアントWebhook呼び出しエラー:', clientError);
+      console.error('クライアントWebhook呼び出しエラー:', clientError.message);
       
       if (clientError.response) {
         console.error('クライアント応答詳細:', {
           status: clientError.response.status,
           data: clientError.response.data
         });
+      } else if (clientError.request) {
+        console.error('レスポンスが受信できませんでした (タイムアウトの可能性)');
       }
       
-      res.status(502).json({ 
-        error: 'クライアントWebhookの呼び出しに失敗しました',
-        details: clientError.message,
-        timestamp: new Date().toISOString() 
-      });
+      // クライアント側処理が失敗したことをログに記録するだけ
+      // レスポンスはすでに返しているので、ここでは何もしない
     }
   } catch (error) {
     console.error('Webhookエラー:', error);
@@ -163,45 +165,47 @@ app.post('/api/api/ai/webhook', async (req, res) => {
       });
     }
 
-    console.log('Webhook認証成功 - クライアントAPIへ転送中');
+    console.log('Webhook認証成功 - 処理を開始します');
     
-    // 成功したら、クライアント側のWebhookエンドポイントに転送
+    // 成功レスポンスを直接返す（クライアント側の処理を待たない）
+    res.json({ 
+      message: 'Webhook処理を受け付けました。バックグラウンドで処理を実行します。',
+      timestamp: new Date().toISOString() 
+    });
+    
+    // バックグラウンドでクライアント側Webhookを呼び出す試行
     try {
       const clientUrl = process.env.CLIENT_URL || 'https://training-b.vercel.app';
       const clientWebhookUrl = `${clientUrl}/api/ai/webhook`;
       
       console.log(`クライアントWebhookへの転送: ${clientWebhookUrl}`);
       
+      // タイムアウトを設定して確実にレスポンスを得る
       const clientResponse = await axios.post(clientWebhookUrl, { 
         secret: process.env.WEBHOOK_SECRET 
       }, {
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        timeout: 10000 // 10秒でタイムアウト
       });
       
       console.log('クライアント応答:', clientResponse.data);
-      
-      res.json({ 
-        message: 'Webhook処理完了: クライアント側で質問と回答が生成されました',
-        clientResponse: clientResponse.data,
-        timestamp: new Date().toISOString() 
-      });
+      // レスポンスはすでに返しているので、ここでは何もしない
     } catch (clientError) {
-      console.error('クライアントWebhook呼び出しエラー:', clientError);
+      console.error('クライアントWebhook呼び出しエラー:', clientError.message);
       
       if (clientError.response) {
         console.error('クライアント応答詳細:', {
           status: clientError.response.status,
           data: clientError.response.data
         });
+      } else if (clientError.request) {
+        console.error('レスポンスが受信できませんでした (タイムアウトの可能性)');
       }
       
-      res.status(502).json({ 
-        error: 'クライアントWebhookの呼び出しに失敗しました',
-        details: clientError.message,
-        timestamp: new Date().toISOString() 
-      });
+      // クライアント側処理が失敗したことをログに記録するだけ
+      // レスポンスはすでに返しているので、ここでは何もしない
     }
   } catch (error) {
     console.error('Webhookエラー:', error);
