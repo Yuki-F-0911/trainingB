@@ -5,12 +5,6 @@ import { Box, Heading, Text, SimpleGrid, Container, Button, useToast } from '@ch
 import QuestionCard from '../components/question/QuestionCard';
 import axios from '../lib/axios';
 import { Question } from '../models/interfaces';
-import { Metadata } from 'next';
-
-export const metadata: Metadata = {
-  title: '質問一覧 | トレーニング掲示板',
-  description: 'マラソンを中心とする市民ランナーのトレーニングに関する質問一覧',
-};
 
 export default function QuestionsPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
