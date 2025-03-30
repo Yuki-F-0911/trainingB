@@ -26,10 +26,54 @@ app.get('/api', (req, res) => {
     message: 'APIルートが正常に動作しています',
     endpoints: {
       webhook: '/api/ai/webhook',
+      questions: '/api/questions',
       health: '/health',
       debug: '/debug/env'
     }
   });
+});
+
+// 質問一覧エンドポイント
+app.get('/api/questions', async (req, res) => {
+  try {
+    console.log('質問一覧リクエスト受信');
+    
+    // クライアントアプリのAPIを呼び出して質問一覧を取得
+    const clientUrl = process.env.CLIENT_URL || 'https://training-b.vercel.app';
+    const response = await axios.get(`${clientUrl}/api/questions`);
+    
+    console.log('クライアントから質問データ取得成功');
+    res.json(response.data);
+  } catch (error) {
+    console.error('質問一覧取得エラー:', error);
+    
+    // ダミーデータを返す（開発用）
+    const dummyQuestions = [
+      {
+        id: 'dummy1',
+        title: 'マラソンの練習頻度について',
+        content: 'フルマラソンに向けての練習頻度はどのくらいが適切でしょうか？初心者ですが、3ヶ月後の大会に参加予定です。',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        userId: 'user1',
+        isAIGenerated: true,
+        personality: '専門家',
+        _count: { answers: 2 }
+      },
+      {
+        id: 'dummy2',
+        title: '長距離走でのエネルギー補給について',
+        content: '長距離を走る際のエネルギー補給のタイミングと摂取すべきものについてアドバイスいただけますか？',
+        createdAt: new Date(Date.now() - 86400000).toISOString(), // 1日前
+        updatedAt: new Date(Date.now() - 86400000).toISOString(),
+        userId: 'user2',
+        isAIGenerated: false,
+        _count: { answers: 1 }
+      }
+    ];
+    
+    res.json({ questions: dummyQuestions });
+  }
 });
 
 // ルートパスのハンドラー
