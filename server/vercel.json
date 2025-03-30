@@ -25,6 +25,9 @@
       "dest": "dist/index.js"
     }
   ],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api" }
+  ],
   "env": {
     "NODE_ENV": "production"
   }
