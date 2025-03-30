@@ -8,7 +8,7 @@ import authRoutes from './routes/auth';
 import questionRoutes from './routes/questions';
 import aiRoutes from './routes/ai';
 import bookmarkRoutes from './routes/bookmarks';
-import { startAutoPostJob } from './jobs/autoPost';
+// import { startAutoPostJob } from './jobs/autoPost';
 
 // Load environment variables
 dotenv.config();
