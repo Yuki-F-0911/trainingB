@@ -1,7 +1,10 @@
 {
   "name": "training-board",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "workspaces": [
+    "server"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "npx prisma generate && next build",
