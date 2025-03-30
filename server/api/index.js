@@ -65,6 +65,27 @@ app.get('/', (req, res) => {
 });
 
 // API/webhookエンドポイント
+app.get('/api/ai/webhook', (req, res) => {
+  console.log('Webhook GET リクエスト受信');
+  res.json({
+    status: 'ok',
+    message: 'AI Webhook API エンドポイントが正常に動作しています',
+    details: 'このエンドポイントはPOSTリクエストでWebhookを受け付けています',
+    usage: 'POSTリクエストで { "secret": "your_webhook_secret" } を送信してください'
+  });
+});
+
+// 二重パスのGETリクエストにも対応
+app.get('/api/api/ai/webhook', (req, res) => {
+  console.log('二重パス Webhook GET リクエスト受信');
+  res.json({
+    status: 'ok',
+    message: 'AI Webhook API エンドポイント（二重パス）が正常に動作しています',
+    details: 'このエンドポイントはPOSTリクエストでWebhookを受け付けています',
+    usage: 'POSTリクエストで { "secret": "your_webhook_secret" } を送信してください'
+  });
+});
+
 app.post('/api/ai/webhook', async (req, res) => {
   try {
     console.log('Webhook呼び出し受信:', req.body);
