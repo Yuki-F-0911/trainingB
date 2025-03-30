@@ -15,6 +15,18 @@ app.use(cors({
 // Content-Type設定
 app.use(express.json());
 
+// APIルート
+app.get('/api', (req, res) => {
+  res.json({ 
+    message: 'APIルートが正常に動作しています',
+    endpoints: {
+      webhook: '/api/ai/webhook',
+      health: '/health',
+      debug: '/debug/env'
+    }
+  });
+});
+
 // ルートパスのハンドラー
 app.get('/', (req, res) => {
   res.json({ 
