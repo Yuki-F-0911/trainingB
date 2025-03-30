@@ -19,6 +19,16 @@ const personalities = [
   },
 ];
 
+// GETメソッドを追加
+export async function GET(request: Request) {
+  return NextResponse.json({
+    status: 'ok',
+    message: 'AI Webhook API エンドポイントが正常に動作しています',
+    details: 'このエンドポイントはPOSTリクエストでWebhookを受け付けています',
+    usage: 'POSTリクエストで { "secret": "your_webhook_secret" } を送信してください'
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const { secret } = await request.json();
