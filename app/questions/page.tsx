@@ -57,7 +57,8 @@ export default function QuestionsPage() {
   const generateAIQuestion = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/ai/webhook', {
+      // /api プレフィックスを削除して正しいサーバーAPIのパスを使用
+      const response = await axios.post('/ai/webhook', {
         secret: process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'zf&c;IXyflo/b'
       });
       
