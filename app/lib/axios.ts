@@ -7,7 +7,7 @@ console.log('API URL設定:', API_URL);
 
 const apiClient = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -7,8 +7,13 @@ const app = express();
 
 // CORS設定
 app.use(cors({
-  origin: '*',
+  origin: [
+    'https://training-b.vercel.app',
+    'https://training-board.vercel.app',
+    'http://localhost:3000'
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
   credentials: true
 }));
 
