@@ -42,12 +42,14 @@ export async function GET(
       );
     }
     
-    console.log('API: 質問が見つかりました:', question._id);
+    // 型アサーションを使用して_idにアクセス
+    const questionData = question as any;
+    console.log('API: 質問が見つかりました:', questionData._id);
     
     // MongoDBの_idを文字列に変換
     const formattedQuestion = {
       ...question,
-      id: question._id.toString(),
+      id: questionData._id.toString(),
     };
     
     // 関連する回答も取得
@@ -60,10 +62,13 @@ export async function GET(
     console.log(`API: ${answers.length}件の回答が見つかりました`);
     
     // 回答のIDも文字列に変換
-    const formattedAnswers = answers.map(answer => ({
-      ...answer,
-      id: answer._id.toString(),
-    }));
+    const formattedAnswers = answers.map(answer => {
+      const answerData = answer as any;
+      return {
+        ...answer,
+        id: answerData._id.toString(),
+      };
+    });
     
     // CORS設定を追加
     return NextResponse.json(
