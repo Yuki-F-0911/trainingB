@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import Link from 'next/link';
+import axios from '@/app/lib/axios';
 import AnswerForm from '@/app/components/answers/AnswerForm';
 import AnswerList from '@/app/components/answers/AnswerList';
 
@@ -26,21 +27,24 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
         setLoading(true);
         setError('');
         
-        const response = await fetch(`/api/questions/${questionId}`);
+        // axios を使ってデータを取得する
+        const response = await axios.get(`/questions/${questionId}`);
+        console.log('質問詳細データ:', response.data);
         
-        if (!response.ok) {
-          if (response.status === 404) {
-            throw new Error('質問が見つかりません');
-          }
-          throw new Error('質問の取得に失敗しました');
+        // APIレスポンスの形式に応じてデータを抽出
+        if (response.data && response.data.question) {
+          setQuestion(response.data.question);
+          setAnswers(response.data.answers || []);
+        } else if (response.data) {
+          // 直接質問オブジェクトが返される場合
+          setQuestion(response.data);
+          setAnswers(response.data.answers || []);
+        } else {
+          throw new Error('予期しない応答形式です');
         }
-        
-        const data = await response.json();
-        setQuestion(data.question);
-        setAnswers(data.answers || []);
       } catch (err: any) {
         console.error('質問詳細取得エラー:', err);
-        setError(err.message || '質問の取得中にエラーが発生しました');
+        setError(err.message || err.response?.data?.error || '質問の取得中にエラーが発生しました');
       } finally {
         setLoading(false);
       }
@@ -58,31 +62,26 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
     }
     
     try {
-      const response = await fetch('/api/ratings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'question',
-          targetId: questionId,
-          value: value,
-        }),
+      const response = await axios.post('/ratings', {
+        type: 'question',
+        targetId: questionId,
+        value: value,
       });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '評価の送信に失敗しました');
-      }
-      
       // 成功したら質問を再取得
-      const updatedResponse = await fetch(`/api/questions/${questionId}`);
-      const updatedData = await updatedResponse.json();
-      setQuestion(updatedData.question);
+      const updatedResponse = await axios.get(`/questions/${questionId}`);
+      
+      if (updatedResponse.data && updatedResponse.data.question) {
+        setQuestion(updatedResponse.data.question);
+      } else {
+        setQuestion(updatedResponse.data);
+      }
       
       // ユーザーの評価状態を更新
       setUserRating(value === userRating ? null : value);
     } catch (err: any) {
       console.error('評価エラー:', err);
-      alert(err.message || '評価の送信中にエラーが発生しました');
+      alert(err.response?.data?.error || err.message || '評価の送信中にエラーが発生しました');
     }
   };
 
@@ -116,10 +115,10 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
           <h1 className="text-2xl font-bold text-gray-900">{question.title}</h1>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">
-              {question.answersCount} 回答
+              {question.answersCount || question._count?.answers || answers.length} 回答
             </span>
             <span className="text-sm text-gray-600">
-              {question.views} 閲覧
+              {question.views || 0} 閲覧
             </span>
           </div>
         </div>
@@ -138,7 +137,7 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
 
         <div className="flex justify-between items-center text-sm text-gray-600">
           <div className="flex items-center gap-2">
-            <span>投稿者: {question.user?.name || '不明'}</span>
+            <span>投稿者: {question.user?.name || question.author?.name || '不明'}</span>
             {question.isAIGenerated && (
               <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs">
                 AI生成
@@ -148,62 +147,47 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
           <span>{timeAgo}</span>
         </div>
         
-        {session && session.user && (question.user?._id === session.user.id) && (
-          <div className="mt-4 flex gap-2 justify-end">
-            <Link 
-              href={`/questions/${questionId}/edit`}
-              className="text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-600 hover:border-blue-800"
-            >
-              編集
-            </Link>
+        {/* 評価ボタン */}
+        {session && (
+          <div className="mt-6 flex items-center space-x-2">
             <button 
-              className="text-red-600 hover:text-red-800 px-3 py-1 rounded border border-red-600 hover:border-red-800"
-              onClick={() => {
-                if (confirm('この質問を削除してもよろしいですか？この操作は取り消せません。')) {
-                  // 質問削除APIを呼び出し
-                }
-              }}
+              onClick={() => handleRating(1)}
+              className={`px-3 py-1 rounded-md ${userRating === 1 ? 'bg-green-500 text-white' : 'bg-gray-200'}`}
             >
-              削除
+              役立つ 👍
+            </button>
+            <button 
+              onClick={() => handleRating(-1)}
+              className={`px-3 py-1 rounded-md ${userRating === -1 ? 'bg-red-500 text-white' : 'bg-gray-200'}`}
+            >
+              役立たない 👎
             </button>
           </div>
         )}
       </div>
-      
+
+      {/* 回答セクション */}
       <div className="space-y-6">
-        <h2 className="text-xl font-semibold text-gray-800">
-          {answers.length > 0 ? `${answers.length}件の回答` : '回答がありません'}
+        <h2 className="text-xl font-semibold text-gray-900">
+          {answers.length}件の回答
         </h2>
         
-        <AnswerList 
-          answers={answers} 
-          questionId={questionId}
-          onAnswerUpdate={(updatedAnswer) => {
-            setAnswers(answers.map(ans => 
-              ans._id === updatedAnswer._id ? updatedAnswer : ans
-            ));
-          }}
-          onAnswerDelete={(deletedId) => {
-            setAnswers(answers.filter(ans => ans._id !== deletedId));
-          }}
-        />
+        <AnswerList answers={answers} />
+        
+        {session ? (
+          <AnswerForm questionId={questionId} onAnswerAdded={addNewAnswer} />
+        ) : (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p className="text-gray-600">
+              回答を投稿するには
+              <Link href="/auth/signin" className="text-blue-600 hover:underline ml-1">
+                ログイン
+              </Link>
+              してください
+            </p>
+          </div>
+        )}
       </div>
-      
-      {session && (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">あなたの回答</h2>
-          <AnswerForm 
-            questionId={questionId} 
-            onAnswerSubmit={addNewAnswer}
-          />
-        </div>
-      )}
-      
-      {!session && (
-        <div className="bg-gray-50 rounded-lg p-6 text-center">
-          <p className="text-gray-600 mb-3">回答するには<Link href="/auth/signin" className="text-blue-600 hover:underline">ログイン</Link>してください</p>
-        </div>
-      )}
     </div>
   );
 };
