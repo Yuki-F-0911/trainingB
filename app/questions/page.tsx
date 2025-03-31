@@ -13,6 +13,7 @@ export default function QuestionsPage() {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pollingCount, setPollingCount] = useState(0);
   const toast = useToast();
 
   const fetchQuestions = async (page = 1) => {
@@ -53,6 +54,28 @@ export default function QuestionsPage() {
     }
   };
 
+  // ポーリングによるデータ更新 (AI質問生成後に使用)
+  const pollForNewQuestions = (initialCount = 0, maxAttempts = 3, interval = 3000) => {
+    setPollingCount(initialCount);
+    
+    const poll = () => {
+      console.log(`データポーリング実行中... 試行回数: ${initialCount + 1}/${maxAttempts}`);
+      fetchQuestions(1);
+      
+      if (initialCount < maxAttempts - 1) {
+        setTimeout(() => {
+          setPollingCount(initialCount + 1);
+          poll();
+        }, interval);
+      } else {
+        console.log('ポーリング完了');
+        setPollingCount(0);
+      }
+    };
+    
+    poll();
+  };
+
   // 手動でAI質問を生成する関数
   const generateAIQuestion = async () => {
     try {
@@ -66,14 +89,15 @@ export default function QuestionsPage() {
         title: '成功',
         description: 'AI質問リクエストを送信しました。生成完了までしばらくお待ちください。',
         status: 'success',
-        duration: 3000,
+        duration: 5000,
         isClosable: true,
       });
       
-      // 少し待ってから最新データを取得（生成完了を待つ）
-      setTimeout(() => {
-        fetchQuestions(1);
-      }, 5000);
+      // 最初のデータ取得を行い、その後ポーリングを開始
+      fetchQuestions(1).then(() => {
+        // 3秒間隔で3回ポーリングを行う
+        pollForNewQuestions(0, 3, 3000);
+      });
     } catch (error: any) {
       console.error('AI質問生成エラー:', error);
       toast({
@@ -99,7 +123,7 @@ export default function QuestionsPage() {
   };
 
   // 質問データをロード中の表示
-  if (loading) {
+  if (loading && !pollingCount) {
     return (
       <Container maxW="container.xl" py={8}>
         <Heading as="h1" mb={6}>質問一覧</Heading>
@@ -131,10 +155,10 @@ export default function QuestionsPage() {
       <Box mb={8} display="flex" justifyContent="space-between" alignItems="center">
         <Heading as="h1">質問一覧</Heading>
         <HStack spacing={3}>
-          <Button colorScheme="purple" onClick={generateAIQuestion} isLoading={loading}>
-            AI質問生成
+          <Button colorScheme="purple" onClick={generateAIQuestion} isLoading={loading} isDisabled={pollingCount > 0}>
+            {pollingCount > 0 ? `データ更新中 (${pollingCount}/3)` : 'AI質問生成'}
           </Button>
-          <Button colorScheme="blue" onClick={() => fetchQuestions(currentPage)}>
+          <Button colorScheme="blue" onClick={() => fetchQuestions(currentPage)} isLoading={loading} isDisabled={pollingCount > 0}>
             更新
           </Button>
         </HStack>
@@ -180,7 +204,7 @@ export default function QuestionsPage() {
                   aria-label="前のページへ"
                   icon={<ChevronLeftIcon />}
                   onClick={() => handlePageChange(currentPage - 1)}
-                  isDisabled={currentPage <= 1}
+                  isDisabled={currentPage <= 1 || pollingCount > 0}
                   variant="outline"
                 />
                 
@@ -190,6 +214,7 @@ export default function QuestionsPage() {
                     variant={currentPage === i + 1 ? "solid" : "outline"}
                     colorScheme={currentPage === i + 1 ? "blue" : "gray"}
                     onClick={() => handlePageChange(i + 1)}
+                    isDisabled={pollingCount > 0}
                   >
                     {i + 1}
                   </Button>
@@ -199,7 +224,7 @@ export default function QuestionsPage() {
                   aria-label="次のページへ"
                   icon={<ChevronRightIcon />}
                   onClick={() => handlePageChange(currentPage + 1)}
-                  isDisabled={currentPage >= totalPages}
+                  isDisabled={currentPage >= totalPages || pollingCount > 0}
                   variant="outline"
                 />
               </HStack>
