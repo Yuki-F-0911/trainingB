@@ -5,10 +5,14 @@ import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
 interface Answer {
-  id: string;
+  id?: string;
+  _id?: string;
   content: string;
   createdAt: string;
   author?: {
+    name?: string;
+  };
+  user?: {
     name?: string;
   };
   isAIGenerated?: boolean;
@@ -33,30 +37,48 @@ const AnswerList = ({ answers, questionId, onAnswerUpdate, onAnswerDelete }: Ans
     }));
   };
 
-  if (answers.length === 0) {
+  // 回答が空の場合
+  if (!answers || answers.length === 0) {
     return <p className="text-gray-600">まだ回答はありません。最初の回答を投稿してみましょう！</p>;
   }
 
+  console.log('[AnswerList] 表示する回答数:', answers.length);
+
   return (
     <div className="space-y-6">
-      {answers.map((answer) => {
-        const isExpanded = expandedAnswers[answer.id] || false;
-        const createdAt = new Date(answer.createdAt);
-        const timeAgo = formatDistanceToNow(createdAt, { locale: ja, addSuffix: true });
+      {answers.map((answer, index) => {
+        // IDを取得（_idまたはid、または代替としてインデックス）
+        const answerId = answer._id || answer.id || `answer-${index}`;
+        console.log(`[AnswerList] 回答ID: ${answerId}`);
         
-        const longContent = answer.content.length > 300;
+        const isExpanded = expandedAnswers[answerId] || false;
+        
+        // 日付形式の処理を改善
+        let timeAgo = '';
+        try {
+          const createdAt = new Date(answer.createdAt);
+          timeAgo = formatDistanceToNow(createdAt, { locale: ja, addSuffix: true });
+        } catch (err) {
+          console.error(`[AnswerList] 日付の変換に失敗しました:`, err);
+          timeAgo = '不明な日時';
+        }
+        
+        const longContent = answer.content && answer.content.length > 300;
         const displayContent = longContent && !isExpanded 
           ? answer.content.substring(0, 300) + '...' 
           : answer.content;
 
+        // 作者名の取得（authorまたはuser）
+        const authorName = answer.author?.name || answer.user?.name || '不明';
+
         return (
-          <div key={answer.id} className="bg-gray-50 rounded-lg p-5 border border-gray-200">
+          <div key={answerId} className="bg-gray-50 rounded-lg p-5 border border-gray-200">
             <div className="prose max-w-none">
               <p className="whitespace-pre-wrap">{displayContent}</p>
               
               {longContent && (
                 <button 
-                  onClick={() => toggleAnswerExpand(answer.id)}
+                  onClick={() => toggleAnswerExpand(answerId)}
                   className="text-blue-600 hover:underline text-sm mt-2"
                 >
                   {isExpanded ? '折りたたむ' : 'もっと見る'}
@@ -66,7 +88,7 @@ const AnswerList = ({ answers, questionId, onAnswerUpdate, onAnswerDelete }: Ans
             
             <div className="flex justify-between items-center mt-4 text-sm text-gray-600">
               <div className="flex items-center gap-2">
-                <span>回答者: {answer.author?.name || '不明'}</span>
+                <span>回答者: {authorName}</span>
                 {answer.isAIGenerated && (
                   <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs">
                     AI生成

@@ -33,7 +33,7 @@ export default function QuestionPageClient({ questionId }: QuestionPageClientPro
   
   return (
     <div className="space-y-8">
-      <QuestionDetail />
+      <QuestionDetail questionId={questionId} />
     </div>
   );
 } 

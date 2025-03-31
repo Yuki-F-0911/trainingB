@@ -7,7 +7,9 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/auth.config"
 // 質問一覧を取得
 export async function GET(req: NextRequest) {
   try {
+    console.log('API: 質問一覧取得開始');
     await connectToDatabase();
+    console.log('API: データベース接続完了');
     
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
@@ -15,6 +17,8 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
     const sort = searchParams.get("sort") || "-createdAt"; // デフォルトは新しい順
     const search = searchParams.get("search") || "";
+    
+    console.log(`API: パラメータ - page:${page}, limit:${limit}, sort:${sort}, search:${search}`);
     
     let query = {};
     if (search) {
@@ -26,6 +30,7 @@ export async function GET(req: NextRequest) {
       };
     }
     
+    console.log('API: 質問データ取得クエリ実行');
     const questions = await Question.find(query)
       .sort(sort)
       .skip(skip)
@@ -33,12 +38,15 @@ export async function GET(req: NextRequest) {
       .populate("user", "name")
       .lean();
     
+    console.log(`API: ${questions.length}件の質問データを取得`);
+    
     // IDが正しく取得されているか確認
     const processedQuestions = questions.map(q => {
       // MongoDBの_idオブジェクトを文字列に変換し、確実にIDを持つようにする
       if (q._id) {
         return {
           ...q,
+          id: q._id.toString(),
           _id: q._id.toString()
         };
       }
@@ -46,6 +54,7 @@ export async function GET(req: NextRequest) {
       return q;
     }).filter(q => q._id); // IDが存在する質問のみ返す
     
+    console.log('API: 質問データの処理完了');
     const total = await Question.countDocuments(query);
     
     return NextResponse.json({

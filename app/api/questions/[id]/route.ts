@@ -5,6 +5,19 @@ import Answer from "@/app/models/Answer";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth.config";
 
+// Answerのインターフェースを定義
+interface AnswerType {
+  _id: any;
+  content: string;
+  user?: any;
+  question: any;
+  upvotes?: number;
+  downvotes?: number;
+  isAIGenerated?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 // 質問の詳細を取得
 export async function GET(
   request: Request,
@@ -23,6 +36,11 @@ export async function GET(
       );
     }
     
+    // MongoDBのObjectId形式かどうかをチェック
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(questionId);
+    const isAIGenId = !isMongoId && questionId.length > 0;
+    console.log(`API: ID形式 - MongoDBのID: ${isMongoId}, AI生成ID可能性: ${isAIGenId}`);
+    
     // データベース接続
     console.log('API: データベース接続開始');
     await connectToDatabase();
@@ -30,9 +48,27 @@ export async function GET(
     
     // MongoDBからのクエリのデバッグログを追加
     console.log('API: 質問検索', questionId);
-    const question = await Question.findById(questionId)
-      .populate("user", "name")
-      .lean();
+    
+    let question;
+    
+    // 標準的なMongoDBのIDの場合
+    if (isMongoId) {
+      try {
+        question = await Question.findById(questionId)
+          .populate("user", "name profileImage")
+          .lean();
+      } catch (mongoError) {
+        console.error('API: MongoDBでの検索エラー:', mongoError);
+      }
+    }
+    
+    // AI生成IDまたはMongoDBでの検索が失敗した場合、customIdフィールドで検索
+    if (!question && isAIGenId) {
+      console.log('API: カスタムIDで検索:', questionId);
+      question = await Question.findOne({ customId: questionId })
+        .populate("user", "name profileImage")
+        .lean();
+    }
     
     if (!question) {
       console.log('API: 質問が見つかりません', questionId);
@@ -53,16 +89,20 @@ export async function GET(
     };
     
     // 関連する回答も取得
-    console.log('API: 関連回答検索');
-    const answers = await Answer.find({ question: questionId })
-      .populate("user", "name")
-      .sort("-upvotes") // 評価の高い順
-      .lean();
-    
-    console.log(`API: ${answers.length}件の回答が見つかりました`);
+    console.log('API: 関連回答検索 - 質問ID:', questionId);
+    let answers: AnswerType[] = [];
+    try {
+      answers = await Answer.find({ question: questionId })
+        .populate("user", "name profileImage")
+        .sort({ createdAt: -1 })
+        .lean() as unknown as AnswerType[];
+      console.log(`API: ${answers.length}件の回答が見つかりました`);
+    } catch (error) {
+      console.error('API: 回答取得エラー:', error);
+    }
     
     // 回答のIDも文字列に変換
-    const formattedAnswers = answers.map(answer => {
+    const formattedAnswers = (answers as AnswerType[]).map(answer => {
       const answerData = answer as any;
       return {
         ...answer,

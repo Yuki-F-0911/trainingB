@@ -4,95 +4,89 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ja } from 'date-fns/locale';
 
-interface QuestionCardProps {
-  question: {
-    _id?: string;
-    id?: string;
-    title: string;
-    content: string;
-    user?: {
-      _id?: string;
-      id?: string;
-      name?: string;
-    };
-    author?: {
-      _id?: string;
-      id?: string;
-      name?: string;
-    };
-    upvotes?: number;
-    downvotes?: number;
-    tags?: string[];
-    createdAt: string;
-    isAIGenerated?: boolean;
-    answersCount?: number;
-    views?: number;
+interface Question {
+  _id?: string;
+  id?: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  user?: {
+    name?: string;
   };
+  author?: {
+    name?: string;
+  };
+  answers?: any[];
+  tags?: string[];
+  isAIGenerated?: boolean;
+  views?: number;
 }
 
-const QuestionCard = ({ question }: QuestionCardProps) => {
+interface QuestionCardProps {
+  question: Question;
+  showPreview?: boolean;
+}
+
+const QuestionCard = ({ question, showPreview = true }: QuestionCardProps) => {
+  // idを確実に取得（_idとidの両方をチェック）
+  const questionId = question.id || question._id;
+  
+  // デバッグログの追加
+  if (!questionId) {
+    console.error('QuestionCard: 質問IDが見つかりません', question);
+  } else {
+    console.log('QuestionCard: 質問ID', questionId, 'タイプ:', typeof questionId);
+  }
+  
+  // 作成日を整形
   const createdAt = new Date(question.createdAt);
   const timeAgo = formatDistanceToNow(createdAt, { locale: ja, addSuffix: true });
-  const tags = question.tags || [];
-
-  // 質問IDの取得（MongoDBの_idまたは通常のid）
-  const questionId = question._id || question.id || '';
   
-  // IDを明示的に文字列に変換
-  const safeQuestionId = String(questionId);
-  
-  // IDが無効な場合のデバッグ情報
-  if (!safeQuestionId || safeQuestionId === 'undefined' || safeQuestionId === 'null') {
-    console.error('[QuestionCard] 無効な質問ID:', safeQuestionId, '質問データ:', question);
-  } else {
-    console.log('[QuestionCard] 有効な質問ID:', safeQuestionId);
-  }
-
-  // ユーザー名を取得（異なるAPIのレスポンス形式に対応）
-  const userName = question.user?.name || question.author?.name || '不明';
+  // コンテンツのプレビュー（表示文字数を制限）
+  const contentPreview = showPreview 
+    ? question.content.length > 150 
+      ? question.content.substring(0, 150) + '...' 
+      : question.content
+    : '';
 
   return (
-    <div className="border rounded-lg shadow-sm p-6 bg-white hover:shadow-md transition duration-300">
-      <div className="flex justify-between items-start mb-2">
-        <h2 className="text-xl font-semibold text-gray-900 hover:text-blue-600">
-          {safeQuestionId && safeQuestionId !== 'undefined' && safeQuestionId !== 'null' ? (
-            <Link href={`/questions/${safeQuestionId}`}>
-              {question.title}
-            </Link>
-          ) : (
-            <span>{question.title}</span>
-          )}
+    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200">
+      <Link href={`/questions/${questionId}`} className="block">
+        <h2 className="text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition-colors">
+          {question.title}
         </h2>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">
-            {question.answersCount || 0} 回答
+      </Link>
+      
+      <div className="flex items-center text-sm text-gray-600 mb-3">
+        <span className="mr-4">投稿: {timeAgo}</span>
+        <span className="mr-4">回答: {question.answers?.length || 0}件</span>
+        <span>閲覧数: {question.views || 0}</span>
+        {question.isAIGenerated && (
+          <span className="ml-4 bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs">
+            AI生成
           </span>
-          <span className="text-sm text-gray-600">
-            {question.views || 0} 閲覧
-          </span>
-        </div>
+        )}
       </div>
-
-      <p className="text-gray-700 mb-4 line-clamp-2">{question.content}</p>
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        {tags.map((tag, index) => (
-          <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm">
+      
+      {showPreview && (
+        <div className="mb-4 text-gray-700 line-clamp-3">
+          {contentPreview}
+        </div>
+      )}
+      
+      <div className="flex flex-wrap gap-2 mb-3">
+        {question.tags && question.tags.map((tag, index) => (
+          <span 
+            key={index} 
+            className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs"
+          >
             {tag}
           </span>
         ))}
       </div>
-
-      <div className="flex justify-between items-center text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <span>投稿者: {userName}</span>
-          {question.isAIGenerated && (
-            <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs">
-              AI生成
-            </span>
-          )}
-        </div>
-        <span>{timeAgo}</span>
+      
+      <div className="text-sm text-gray-600">
+        投稿者: {question.user?.name || question.author?.name || '不明なユーザー'}
       </div>
     </div>
   );

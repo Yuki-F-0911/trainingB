@@ -13,7 +13,6 @@ export default function QuestionsPage() {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [pollingCount, setPollingCount] = useState(0);
   const toast = useToast();
 
   const fetchQuestions = async (page = 1) => {
@@ -54,73 +53,6 @@ export default function QuestionsPage() {
     }
   };
 
-  // ポーリングによるデータ更新 (AI質問生成後に使用)
-  const pollForNewQuestions = (initialCount = 0, maxAttempts = 3, interval = 3000) => {
-    setPollingCount(initialCount);
-    
-    const poll = async () => {
-      console.log(`データポーリング実行中... 試行回数: ${initialCount + 1}/${maxAttempts}`);
-      await fetchQuestions(1);
-      
-      if (initialCount < maxAttempts - 1) {
-        setTimeout(() => {
-          const nextCount = initialCount + 1;
-          setPollingCount(nextCount);
-          
-          // 次の再帰呼び出しでは、更新されたカウントを使用
-          if (nextCount < maxAttempts) {
-            pollForNewQuestions(nextCount, maxAttempts, interval);
-          } else {
-            console.log('ポーリング完了');
-            setPollingCount(0);
-          }
-        }, interval);
-      } else {
-        console.log('ポーリング完了');
-        setPollingCount(0);
-      }
-    };
-    
-    poll();
-  };
-
-  // 手動でAI質問を生成する関数
-  const generateAIQuestion = async () => {
-    try {
-      setLoading(true);
-      // /api プレフィックスを削除して正しいサーバーAPIのパスを使用
-      const response = await axios.post('/ai/webhook', {
-        secret: process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'zf&c;IXyflo/b'
-      });
-      
-      toast({
-        title: '成功',
-        description: 'AI質問リクエストを送信しました。生成完了までしばらくお待ちください。',
-        status: 'success',
-        duration: 5000,
-        isClosable: true,
-      });
-      
-      // 最初のデータ取得を行い、その後ポーリングを開始
-      fetchQuestions(1).then(() => {
-        // 3秒間隔で3回ポーリングを行う
-        pollForNewQuestions(0, 3, 3000);
-      });
-    } catch (error: any) {
-      console.error('AI質問生成エラー:', error);
-      toast({
-        title: 'エラー',
-        description: error.response?.data?.message || error.message || 'AI質問の生成に失敗しました',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-    } finally {
-      // 必ずローディング状態を解除
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
     fetchQuestions(currentPage);
   }, []);
@@ -131,7 +63,7 @@ export default function QuestionsPage() {
   };
 
   // 質問データをロード中の表示
-  if (loading && !pollingCount) {
+  if (loading) {
     return (
       <Container maxW="container.xl" py={8}>
         <Heading as="h1" mb={6}>質問一覧</Heading>
@@ -163,10 +95,7 @@ export default function QuestionsPage() {
       <Box mb={8} display="flex" justifyContent="space-between" alignItems="center">
         <Heading as="h1">質問一覧</Heading>
         <HStack spacing={3}>
-          <Button colorScheme="purple" onClick={generateAIQuestion} isLoading={loading} isDisabled={pollingCount > 0}>
-            {pollingCount > 0 ? `データ更新中 (${pollingCount}/3)` : 'AI質問生成'}
-          </Button>
-          <Button colorScheme="blue" onClick={() => fetchQuestions(currentPage)} isLoading={loading} isDisabled={pollingCount > 0}>
+          <Button colorScheme="blue" onClick={() => fetchQuestions(currentPage)} isLoading={loading}>
             更新
           </Button>
         </HStack>
@@ -184,7 +113,10 @@ export default function QuestionsPage() {
                 {questions
                   .filter(q => q.isAIGenerated)
                   .map(question => (
-                    <QuestionCard key={question.id} question={question} />
+                    <QuestionCard 
+                      key={question.id || question._id || `ai-${question.title}-${Date.now()}`} 
+                      question={question} 
+                    />
                   ))}
               </SimpleGrid>
             </Box>
@@ -198,7 +130,10 @@ export default function QuestionsPage() {
                 {questions
                   .filter(q => !q.isAIGenerated)
                   .map(question => (
-                    <QuestionCard key={question.id} question={question} />
+                    <QuestionCard 
+                      key={question.id || question._id || `user-${question.title}-${Date.now()}`} 
+                      question={question} 
+                    />
                   ))}
               </SimpleGrid>
             </Box>
@@ -212,17 +147,16 @@ export default function QuestionsPage() {
                   aria-label="前のページへ"
                   icon={<ChevronLeftIcon />}
                   onClick={() => handlePageChange(currentPage - 1)}
-                  isDisabled={currentPage <= 1 || pollingCount > 0}
+                  isDisabled={currentPage <= 1}
                   variant="outline"
                 />
                 
                 {[...Array(totalPages)].map((_, i) => (
                   <Button
-                    key={i + 1}
+                    key={`page-${i + 1}`}
                     variant={currentPage === i + 1 ? "solid" : "outline"}
                     colorScheme={currentPage === i + 1 ? "blue" : "gray"}
                     onClick={() => handlePageChange(i + 1)}
-                    isDisabled={pollingCount > 0}
                   >
                     {i + 1}
                   </Button>
@@ -232,7 +166,7 @@ export default function QuestionsPage() {
                   aria-label="次のページへ"
                   icon={<ChevronRightIcon />}
                   onClick={() => handlePageChange(currentPage + 1)}
-                  isDisabled={currentPage >= totalPages || pollingCount > 0}
+                  isDisabled={currentPage >= totalPages}
                   variant="outline"
                 />
               </HStack>

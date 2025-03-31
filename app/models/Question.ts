@@ -1,24 +1,24 @@
-import mongoose, { Schema, models } from 'mongoose';
+import mongoose from 'mongoose';
 
-const QuestionSchema = new Schema(
+// ユーザースキーマ
+const QuestionSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, 'タイトルは必須です'],
+      trim: true,
+      maxlength: [200, 'タイトルは200文字以下にしてください'],
     },
     content: {
       type: String,
-      required: true,
+      required: [true, '質問内容は必須です'],
+      trim: true,
     },
     user: {
-      type: Schema.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
     },
-    tags: {
-      type: [String],
-      default: [],
-    },
+    tags: [String],
     upvotes: {
       type: Number,
       default: 0,
@@ -27,16 +27,39 @@ const QuestionSchema = new Schema(
       type: Number,
       default: 0,
     },
+    views: {
+      type: Number,
+      default: 0,
+    },
     isAIGenerated: {
       type: Boolean,
-      default: false,
+      default: false
     },
+    customId: {
+      type: String,
+      index: true,
+      sparse: true
+    }
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
-const Question = models.Question || mongoose.model('Question', QuestionSchema);
+// 仮想フィールドの設定
+QuestionSchema.virtual('answers', {
+  ref: 'Answer',
+  localField: '_id',
+  foreignField: 'question',
+  justOne: false,
+  options: { sort: { createdAt: -1 } }
+});
+
+// インデックスの設定
+QuestionSchema.index({ title: 'text', content: 'text' });
+QuestionSchema.index({ tags: 1 });
+QuestionSchema.index({ createdAt: -1 });
+QuestionSchema.index({ upvotes: -1 });
+
+// モデルをキャッシュから取得するか、作成する
+const Question = mongoose.models.Question || mongoose.model('Question', QuestionSchema);
 
 export default Question; 

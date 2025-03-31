@@ -1,6 +1,7 @@
 // Question インターフェース
 export interface Question {
   id: string;
+  _id?: string; // MongoDB から直接取得した場合に存在するプロパティ
   title: string;
   content: string;
   createdAt: string;

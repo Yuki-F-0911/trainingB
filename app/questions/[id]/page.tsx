@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { QuestionDetail } from '@/app/components/questions/QuestionDetail';
+import QuestionPageClient from './QuestionPageClient';
 
 interface Props {
   params: {
@@ -50,13 +50,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-// クライアントサイドの処理をClientComponentに移動
-import QuestionPageClient from './QuestionPageClient';
-
 export default function QuestionPage({ params }: Props) {
-  // IDを明示的に文字列として扱う
+  // IDを文字列として扱う
   const questionId = String(params.id);
   
-  // クライアントコンポーネントにIDを渡す
-  return <QuestionPageClient questionId={questionId} />;
+  return (
+    <div>
+      <QuestionPageClient questionId={questionId} />
+    </div>
+  );
 } 

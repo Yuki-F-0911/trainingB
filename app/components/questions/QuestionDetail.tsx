@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
@@ -9,7 +9,21 @@ import { ja } from 'date-fns/locale';
 import AnswerList from '../answers/AnswerList';
 
 // APIのエンドポイントを環境変数から取得
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+// APIベースURLの正規化関数
+const normalizeApiUrl = (url: string) => {
+  // /api で終わる場合はそのまま返す
+  if (url.endsWith('/api')) {
+    return url;
+  }
+  // /で終わる場合は api を追加
+  if (url.endsWith('/')) {
+    return `${url}api`;
+  }
+  // その他の場合は /api を追加
+  return `${url}/api`;
+};
 
 interface Question {
   _id?: string;
@@ -31,38 +45,80 @@ interface Question {
   views?: number;
 }
 
-export const QuestionDetail = () => {
+interface QuestionDetailProps {
+  questionId?: string;
+}
+
+export const QuestionDetail = ({ questionId: propQuestionId }: QuestionDetailProps) => {
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const searchParams = useSearchParams();
+  const params = useParams();
 
   useEffect(() => {
     const fetchQuestionDetail = async () => {
       try {
-        // URLからIDを取得
-        const id = searchParams?.get('id');
+        // まずpropsから渡されたIDを確認
+        let id = propQuestionId;
+        
+        // 空文字列チェックを追加
+        if (id === '') {
+          console.error('[QuestionDetail] IDが空文字列です');
+          id = undefined;
+        }
+        
+        // propsにIDがない場合はURLパラメータを確認（[id]フォルダの場合）
+        if (!id) {
+          id = typeof params?.id === 'string' ? String(params.id) : undefined;
+          console.log('[QuestionDetail] URLパラメータからID取得:', id);
+        }
+        
+        // クエリパラメータからも確認（下位互換性のため）
+        if (!id) {
+          const queryId = searchParams?.get('id');
+          id = queryId || undefined;
+          console.log('[QuestionDetail] クエリパラメータからID取得:', id);
+        }
         
         // コンソールにIDを出力（デバッグ用）
-        console.log('[QuestionDetail] URLから取得したID:', id);
+        console.log('[QuestionDetail] 最終的なID:', id, 'タイプ:', typeof id);
         
         // IDが無効な場合はエラーを設定
-        if (!id || id === 'undefined' || id === 'null') {
+        if (!id || id === 'undefined' || id === 'null' || id === '') {
           console.error('[QuestionDetail] 無効な質問ID:', id);
           setError('無効な質問IDです。');
           setLoading(false);
           return;
         }
 
+        // AIによって生成された質問IDの検出（MongoDB ObjectIdではない形式）
+        const isMongoId = /^[0-9a-fA-F]{24}$/.test(id);
+        const isAIGenId = !isMongoId && id.length > 0;
+        console.log(`[QuestionDetail] MongoDBのID形式: ${isMongoId}, AI生成ID形式の可能性: ${isAIGenId}`);
+
         // APIを呼び出して質問の詳細を取得
-        console.log(`[QuestionDetail] API呼び出し: ${API_URL}/api/questions/${id}`);
-        const response = await fetch(`${API_URL}/api/questions/${id}`);
+        // APIエンドポイントパスの修正 - /api/ を含めるかどうかを確認
+        const baseUrl = normalizeApiUrl(API_URL);
+        const apiEndpoint = `${baseUrl}/questions/${id}`;
+        console.log(`[QuestionDetail] API呼び出し: ${apiEndpoint}`);
+        
+        // 異なるエンドポイントも試してみる（AI生成質問用の別エンドポイントがある場合）
+        let response;
+        try {
+          response = await fetch(apiEndpoint);
+          console.log('[QuestionDetail] 通常APIレスポンスステータス:', response.status);
+        } catch (fetchError) {
+          console.error('[QuestionDetail] 通常API呼び出しエラー:', fetchError);
+          // 代替エンドポイントを試す
+          const altApiEndpoint = `${baseUrl}/ai-questions/${id}`;
+          console.log(`[QuestionDetail] 代替API呼び出し: ${altApiEndpoint}`);
+          response = await fetch(altApiEndpoint);
+        }
         
         // レスポンスのステータスを確認
-        console.log('[QuestionDetail] APIレスポンスステータス:', response.status);
-        
         if (!response.ok) {
-          const errorData = await response.json();
+          const errorData = await response.json().catch(() => ({}));
           console.error('[QuestionDetail] APIエラー:', errorData);
           throw new Error(errorData.message || '質問の取得に失敗しました。');
         }
@@ -70,11 +126,49 @@ export const QuestionDetail = () => {
         const data = await response.json();
         console.log('[QuestionDetail] 取得した質問データ:', data);
         
-        if (!data || !data.question) {
+        if (!data || (!data.question && !data.title)) {
           throw new Error('質問データが見つかりませんでした。');
         }
 
-        setQuestion(data.question);
+        // データ形式の正規化（APIレスポンスの形式が異なる場合に対応）
+        const questionData = data.question || data;
+        
+        // 回答データを確認して利用可能であれば設定
+        if (data.answers && Array.isArray(data.answers)) {
+          questionData.answers = data.answers;
+          console.log(`[QuestionDetail] APIから取得した回答数: ${data.answers.length}`);
+        } else {
+          console.log('[QuestionDetail] APIレスポンスに回答データが含まれていません');
+          // デフォルトで空の配列を設定
+          questionData.answers = [];
+          
+          // 回答データを別途取得
+          try {
+            // 回答リストを取得するためのAPIエンドポイント
+            const answersEndpoint = `${baseUrl}/answers?questionId=${id}`;
+            console.log(`[QuestionDetail] 回答データ取得API呼び出し: ${answersEndpoint}`);
+            
+            const answersResponse = await fetch(answersEndpoint);
+            if (answersResponse.ok) {
+              const answersData = await answersResponse.json();
+              console.log('[QuestionDetail] 取得した回答データ:', answersData);
+              
+              // 回答データを質問オブジェクトにマージ
+              if (answersData.answers && Array.isArray(answersData.answers)) {
+                questionData.answers = answersData.answers;
+              } else if (Array.isArray(answersData)) {
+                questionData.answers = answersData;
+              }
+              console.log(`[QuestionDetail] 設定した回答数: ${questionData.answers.length}`);
+            } else {
+              console.warn('[QuestionDetail] 回答データの取得に失敗しました。ステータス:', answersResponse.status);
+            }
+          } catch (answersError) {
+            console.error('[QuestionDetail] 回答データ取得エラー:', answersError);
+          }
+        }
+        
+        setQuestion(questionData);
       } catch (err: any) {
         console.error('[QuestionDetail] エラー:', err.message);
         setError(err.message || '質問の取得中にエラーが発生しました。');
@@ -83,10 +177,8 @@ export const QuestionDetail = () => {
       }
     };
 
-    if (searchParams) {
-      fetchQuestionDetail();
-    }
-  }, [searchParams]);
+    fetchQuestionDetail();
+  }, [params, searchParams, propQuestionId]);
 
   if (loading) {
     return (
@@ -223,7 +315,16 @@ export const QuestionDetail = () => {
 
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">回答 ({question.answers?.length || 0})</h2>
-        <AnswerList answers={question.answers || []} questionId={question._id || question.id} />
+        {question.answers && question.answers.length > 0 ? (
+          <>
+            <AnswerList answers={question.answers} questionId={question._id || question.id} />
+            <div className="mt-4 text-sm text-gray-600">
+              <p>デバッグ情報: 回答 {question.answers.length}件</p>
+            </div>
+          </>
+        ) : (
+          <p className="text-gray-600">まだ回答はありません。最初の回答を投稿してみましょう！</p>
+        )}
       </div>
 
       <div className="mt-8 text-center">

@@ -1,16 +1,41 @@
 import axios from 'axios';
 
-// 公式APIサーバーのURLを固定で使用
-const API_URL = 'https://training-board-server.vercel.app/api';
+// 環境変数からAPIのベースURLを取得
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-console.log('API URL設定:', API_URL);
+console.log('API_URL:', API_URL);
 
-const apiClient = axios.create({
+// axiosのインスタンスを作成
+const instance = axios.create({
   baseURL: API_URL,
-  withCredentials: false,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-export default apiClient; 
+// リクエスト時のインターセプター
+instance.interceptors.request.use(
+  (config) => {
+    console.log(`Axios Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+    return config;
+  },
+  (error) => {
+    console.error('Axios Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// レスポンス時のインターセプター
+instance.interceptors.response.use(
+  (response) => {
+    console.log(`Axios Response [${response.status}]:`, response.config.url);
+    return response;
+  },
+  (error) => {
+    console.error('Axios Response Error:', error.response || error);
+    return Promise.reject(error);
+  }
+);
+
+export default instance; 
