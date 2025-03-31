@@ -36,11 +36,20 @@ app.get('/api', (req, res) => {
 // 質問一覧エンドポイント
 app.get('/api/questions', async (req, res) => {
   try {
-    console.log('質問一覧リクエスト受信');
+    console.log('質問一覧リクエスト受信', req.query);
+    
+    // ページネーションパラメータを取得
+    const page = req.query.page || 1;
+    const limit = req.query.limit || 9;
     
     // クライアントアプリのAPIを呼び出して質問一覧を取得
     const clientUrl = process.env.CLIENT_URL || 'https://training-b.vercel.app';
-    const response = await axios.get(`${clientUrl}/api/questions`);
+    const response = await axios.get(`${clientUrl}/api/questions`, {
+      params: { 
+        page: page,
+        limit: limit
+      }
+    });
     
     console.log('クライアントから質問データ取得成功');
     res.json(response.data);
@@ -53,6 +62,37 @@ app.get('/api/questions', async (req, res) => {
       message: error.message || 'サーバーエラーが発生しました',
       timestamp: new Date().toISOString()
     });
+  }
+});
+
+// 質問詳細エンドポイント
+app.get('/api/questions/:id', async (req, res) => {
+  try {
+    console.log(`質問詳細リクエスト受信: ID=${req.params.id}`);
+    
+    // クライアントアプリのAPIを呼び出して質問詳細を取得
+    const clientUrl = process.env.CLIENT_URL || 'https://training-b.vercel.app';
+    const response = await axios.get(`${clientUrl}/api/questions/${req.params.id}`);
+    
+    console.log('クライアントから質問詳細データ取得成功');
+    res.json(response.data);
+  } catch (error) {
+    console.error('質問詳細取得エラー:', error);
+    
+    // エラーレスポンスを返す
+    if (error.response && error.response.status === 404) {
+      res.status(404).json({ 
+        error: '質問が見つかりません',
+        message: '指定されたIDの質問は存在しません',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(502).json({ 
+        error: 'クライアントアプリからの質問詳細データ取得に失敗しました',
+        message: error.message || 'サーバーエラーが発生しました',
+        timestamp: new Date().toISOString()
+      });
+    }
   }
 });
 
