@@ -172,10 +172,24 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
           {answers.length}件の回答
         </h2>
         
-        <AnswerList answers={answers} />
+        <AnswerList 
+          answers={answers} 
+          questionId={questionId}
+          onAnswerUpdate={(updatedAnswer) => {
+            setAnswers(answers.map(ans => 
+              ans.id === updatedAnswer.id ? updatedAnswer : ans
+            ));
+          }}
+          onAnswerDelete={(deletedId) => {
+            setAnswers(answers.filter(ans => ans.id !== deletedId));
+          }}
+        />
         
         {session ? (
-          <AnswerForm questionId={questionId} onAnswerAdded={addNewAnswer} />
+          <AnswerForm 
+            questionId={questionId} 
+            onAnswerSubmit={addNewAnswer}
+          />
         ) : (
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <p className="text-gray-600">
