@@ -2,8 +2,20 @@
   "version": 2,
   "crons": [
     {
-      "path": "/api/cron/autoGenerate",
+      "path": "/api/ai/cron",
       "schedule": "0 0,12 * * *"
     }
-  ]
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["hnd1"],
+  "env": {
+    "MONGODB_URI": "@mongodb-uri",
+    "JWT_SECRET": "@jwt-secret",
+    "COOKIE_SECRET": "@cookie-secret",
+    "GEMINI_API_KEY": "@gemini-api-key",
+    "WEBHOOK_SECRET": "@webhook-secret"
+  }
 } 
