@@ -36,11 +36,16 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
   const tags = question.tags || [];
 
   // 質問IDの取得（MongoDBの_idまたは通常のid）
-  const questionId = question._id || question.id;
+  const questionId = question._id || question.id || '';
+  
+  // IDを明示的に文字列に変換
+  const safeQuestionId = String(questionId);
   
   // IDが無効な場合のデバッグ情報
-  if (!questionId) {
-    console.error('無効な質問ID:', question);
+  if (!safeQuestionId || safeQuestionId === 'undefined' || safeQuestionId === 'null') {
+    console.error('[QuestionCard] 無効な質問ID:', safeQuestionId, '質問データ:', question);
+  } else {
+    console.log('[QuestionCard] 有効な質問ID:', safeQuestionId);
   }
 
   // ユーザー名を取得（異なるAPIのレスポンス形式に対応）
@@ -50,8 +55,8 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
     <div className="border rounded-lg shadow-sm p-6 bg-white hover:shadow-md transition duration-300">
       <div className="flex justify-between items-start mb-2">
         <h2 className="text-xl font-semibold text-gray-900 hover:text-blue-600">
-          {questionId ? (
-            <Link href={`/questions/${questionId}`}>
+          {safeQuestionId && safeQuestionId !== 'undefined' && safeQuestionId !== 'null' ? (
+            <Link href={`/questions/${safeQuestionId}`}>
               {question.title}
             </Link>
           ) : (

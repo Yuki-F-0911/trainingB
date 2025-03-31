@@ -1,5 +1,9 @@
+'use client';
+
 import { Metadata } from 'next';
-import QuestionDetail from '@/app/components/questions/QuestionDetail';
+import { QuestionDetail } from '@/app/components/questions/QuestionDetail';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
 
 interface Props {
   params: {
@@ -53,13 +57,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default function QuestionPage({ params }: Props) {
   // IDを明示的に文字列として扱う
   const questionId = String(params.id);
+  const searchParams = useSearchParams();
   
-  // デバッグログの追加
-  console.log('ページレンダリングのID:', questionId);
+  // useEffectを使ってIDをURLに追加
+  useEffect(() => {
+    // IDが有効な場合、search paramsに追加
+    if (questionId && questionId !== 'undefined' && questionId !== 'null') {
+      console.log('[QuestionPage] 有効なID:', questionId);
+      
+      // 現在のURLを取得
+      const url = new URL(window.location.href);
+      
+      // search paramsにidを設定
+      if (!url.searchParams.has('id')) {
+        url.searchParams.set('id', questionId);
+        
+        // 履歴を更新せずにURLを変更（replaceStateを使用）
+        window.history.replaceState({}, '', url.toString());
+        console.log('[QuestionPage] URLを更新:', url.toString());
+      }
+    }
+  }, [questionId]);
   
   return (
     <div className="space-y-8">
-      <QuestionDetail questionId={questionId} />
+      <QuestionDetail />
     </div>
   );
 } 
