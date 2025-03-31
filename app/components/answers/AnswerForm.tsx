@@ -1,18 +1,28 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import axios from 'axios';
+
+interface Answer {
+  id: string;
+  content: string;
+  createdAt: string;
+  author?: {
+    name?: string;
+  };
+  isAIGenerated?: boolean;
+  personality?: string;
+}
 
 interface AnswerFormProps {
   questionId: string;
-  onAnswerSubmit: (answer: any) => void;
+  onAnswerSubmit: (answer: Answer) => void;
 }
 
 const AnswerForm = ({ questionId, onAnswerSubmit }: AnswerFormProps) => {
-  const { data: session } = useSession();
   const [content, setContent] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,44 +32,23 @@ const AnswerForm = ({ questionId, onAnswerSubmit }: AnswerFormProps) => {
       return;
     }
     
-    if (!session) {
-      setError('回答するにはログインが必要です');
-      return;
-    }
+    setLoading(true);
+    setError(null);
     
     try {
-      setIsSubmitting(true);
-      setError('');
-      
-      const response = await fetch('/api/answers', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content,
-          questionId,
-        }),
+      const response = await axios.post(`/api/answers`, {
+        questionId,
+        content: content.trim(),
       });
       
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || '回答の投稿に失敗しました');
-      }
-      
-      const data = await response.json();
-      
-      // 回答詳細を取得して親コンポーネントに渡す
-      const answerResponse = await fetch(`/api/answers/${data.answerId}`);
-      const answerData = await answerResponse.json();
-      
-      onAnswerSubmit(answerData.answer);
+      // 成功したら入力フォームをクリアして親コンポーネントに通知
       setContent('');
+      onAnswerSubmit(response.data);
     } catch (err: any) {
-      console.error('回答投稿エラー:', err);
-      setError(err.message || '回答の投稿中にエラーが発生しました');
+      console.error('回答送信エラー:', err);
+      setError(err.response?.data?.message || err.message || '回答の送信中にエラーが発生しました');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -72,31 +61,25 @@ const AnswerForm = ({ questionId, onAnswerSubmit }: AnswerFormProps) => {
       )}
       
       <div>
-        <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-          回答内容
-        </label>
         <textarea
-          id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[200px] text-gray-800"
-          placeholder="回答内容を入力してください"
-          disabled={isSubmitting}
-          required
+          placeholder="あなたの回答を入力してください..."
+          rows={6}
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          disabled={loading}
         />
       </div>
       
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={isSubmitting}
-          className={`px-6 py-2 rounded-lg text-white ${
-            isSubmitting
-              ? 'bg-blue-400 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700'
+          disabled={loading}
+          className={`px-4 py-2 rounded-md text-white ${
+            loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
-          {isSubmitting ? '投稿中...' : '回答を投稿'}
+          {loading ? '送信中...' : '回答を投稿'}
         </button>
       </div>
     </form>
