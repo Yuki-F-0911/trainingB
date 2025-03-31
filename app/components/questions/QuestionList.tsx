@@ -39,7 +39,7 @@ const QuestionList = () => {
         // 取得したデータを検証
         if (data.questions && Array.isArray(data.questions)) {
           // データの検証とIDの確認
-          const validQuestions = data.questions.filter(q => {
+          const validQuestions = data.questions.filter((q: { _id?: string }) => {
             if (!q || !q._id) {
               console.error('無効な質問データが含まれています:', q);
               return false;
@@ -69,13 +69,21 @@ const QuestionList = () => {
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > totalPages) return;
     
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
+    // 既存のパラメータをコピー
+    searchParams.forEach((value, key) => {
+      params.set(key, value);
+    });
     params.set('page', newPage.toString());
     router.push(`/questions?${params.toString()}`);
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
+    // 既存のパラメータをコピー
+    searchParams.forEach((value, key) => {
+      params.set(key, value);
+    });
     params.set('sort', e.target.value);
     params.set('page', '1'); // ソート変更時は1ページ目に戻る
     router.push(`/questions?${params.toString()}`);
@@ -86,7 +94,11 @@ const QuestionList = () => {
     const formData = new FormData(e.currentTarget);
     const searchQuery = formData.get('search') as string;
     
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams();
+    // 既存のパラメータをコピー
+    searchParams.forEach((value, key) => {
+      params.set(key, value);
+    });
     if (searchQuery) {
       params.set('search', searchQuery);
     } else {
