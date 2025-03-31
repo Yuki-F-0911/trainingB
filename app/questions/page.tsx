@@ -58,14 +58,22 @@ export default function QuestionsPage() {
   const pollForNewQuestions = (initialCount = 0, maxAttempts = 3, interval = 3000) => {
     setPollingCount(initialCount);
     
-    const poll = () => {
+    const poll = async () => {
       console.log(`データポーリング実行中... 試行回数: ${initialCount + 1}/${maxAttempts}`);
-      fetchQuestions(1);
+      await fetchQuestions(1);
       
       if (initialCount < maxAttempts - 1) {
         setTimeout(() => {
-          setPollingCount(initialCount + 1);
-          poll();
+          const nextCount = initialCount + 1;
+          setPollingCount(nextCount);
+          
+          // 次の再帰呼び出しでは、更新されたカウントを使用
+          if (nextCount < maxAttempts) {
+            pollForNewQuestions(nextCount, maxAttempts, interval);
+          } else {
+            console.log('ポーリング完了');
+            setPollingCount(0);
+          }
         }, interval);
       } else {
         console.log('ポーリング完了');
