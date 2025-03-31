@@ -68,11 +68,22 @@ app.get('/api/questions', async (req, res) => {
 // 質問詳細エンドポイント
 app.get('/api/questions/:id', async (req, res) => {
   try {
-    console.log(`質問詳細リクエスト受信: ID=${req.params.id}`);
+    const questionId = req.params.id;
+    console.log(`質問詳細リクエスト受信: ID=${questionId}`);
+    
+    // questionIdがundefinedまたは無効な場合のチェック
+    if (!questionId || questionId === 'undefined') {
+      console.error('無効な質問ID:', questionId);
+      return res.status(400).json({ 
+        error: '無効な質問IDです',
+        message: '有効な質問IDを指定してください',
+        timestamp: new Date().toISOString()
+      });
+    }
     
     // フォールバックデータを用意
     const mockQuestion = {
-      id: req.params.id,
+      id: questionId,
       title: 'マラソン初心者のためのトレーニング計画',
       content: 'マラソンを始めたばかりで、どのようにトレーニングを進めるべきか悩んでいます。最初は何キロから走り始めて、どのように距離を伸ばしていくのがベストでしょうか？また、週に何回走るのが適切ですか？初心者向けのトレーニング計画があれば教えてください。',
       createdAt: new Date().toISOString(),
@@ -100,7 +111,7 @@ app.get('/api/questions/:id', async (req, res) => {
     try {
       // まずクライアントアプリのAPIを呼び出して質問詳細を取得
       const clientUrl = process.env.CLIENT_URL || 'https://training-b.vercel.app';
-      const response = await axios.get(`${clientUrl}/api/questions/${req.params.id}`);
+      const response = await axios.get(`${clientUrl}/api/questions/${questionId}`);
       
       console.log('クライアントから質問詳細データ取得成功');
       res.json(response.data);

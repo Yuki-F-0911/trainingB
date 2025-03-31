@@ -10,7 +10,7 @@ interface Props {
 // メタデータを動的に生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/questions/${await params.id}`, {
+    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/questions/${params.id}`, {
       cache: 'no-store',
     });
     const data = await response.json();
@@ -26,10 +26,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function QuestionPage({ params }: Props) {
+export default function QuestionPage({ params }: Props) {
   return (
     <div className="space-y-8">
-      <QuestionDetail questionId={await params.id} />
+      <QuestionDetail questionId={params.id} />
     </div>
   );
 } 

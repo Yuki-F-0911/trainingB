@@ -51,10 +51,19 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
   useEffect(() => {
     const fetchQuestionDetail = async () => {
       try {
+        // questionIdが空か無効な場合のチェック
+        if (!questionId || questionId === 'undefined') {
+          console.error('無効な質問ID:', questionId);
+          setError('無効な質問IDです。有効な質問IDを指定してください。');
+          setLoading(false);
+          return;
+        }
+        
         setLoading(true);
         setError(null);
         
         // axios を使ってデータを取得する
+        console.log(`質問詳細を取得: ${questionId}`);
         const response = await axios.get(`/api/questions/${questionId}`);
         console.log('質問詳細データ:', response.data);
         
