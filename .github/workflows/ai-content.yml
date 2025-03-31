@@ -1,9 +1,11 @@
-name: Generate AI Content
+name: Generate AI Content and Deploy
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  # 6時間ごとに実行
+    - cron: '0 */12 * * *'  # 12時間ごとに変更（一日2回）
   workflow_dispatch:  # 手動実行も可能
+  push:
+    branches: [main]  # mainブランチへのプッシュで実行
 
 jobs:
   generate:
@@ -17,3 +19,20 @@ jobs:
           curl -X POST ${APP_URL}/api/ai/webhook \
             -H "Content-Type: application/json" \
             -d "{\"secret\": \"${WEBHOOK_SECRET}\"}" 
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: generate
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v20
+        with:
+          zeit-token: ${{ secrets.VERCEL_TOKEN }}  # 古い名前も設定
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+          vercel-args: '--prod' 

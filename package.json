@@ -10,7 +10,8 @@
     "build": "npx prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "npx prisma db seed"
+    "db:seed": "npx prisma db seed",
+    "deploy": "vercel --prod"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
