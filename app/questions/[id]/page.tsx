@@ -10,22 +10,39 @@ interface Props {
 // メタデータを動的に生成
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    if (!params.id || params.id === 'undefined') {
+    // idが無効な場合はデフォルトのメタデータを返す
+    const questionId = params.id;
+    if (!questionId || questionId === 'undefined') {
+      console.error('generateMetadata: 無効な質問ID', questionId);
       return {
         title: '質問詳細',
         description: '質問の詳細ページです',
       };
     }
 
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/questions/${params.id}`, {
+    // デバッグログの追加
+    console.log('質問メタデータ生成のID:', questionId);
+    
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_URL || 'https://training-board-server.vercel.app/api'}/questions/${questionId}`;
+    console.log('APIリクエストURL:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
       cache: 'no-store',
     });
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
+    }
+    
     const data = await response.json();
+    const question = data.question || data;
+    
     return {
-      title: data.question?.title || '質問詳細',
-      description: data.question?.content?.substring(0, 160) || '質問の詳細ページです',
+      title: question?.title || '質問詳細',
+      description: question?.content?.substring(0, 160) || '質問の詳細ページです',
     };
   } catch (error) {
+    console.error('メタデータ生成エラー:', error);
     return {
       title: '質問詳細',
       description: '質問の詳細ページです',
@@ -34,9 +51,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function QuestionPage({ params }: Props) {
+  // IDを明示的に文字列として扱う
+  const questionId = String(params.id);
+  
+  // デバッグログの追加
+  console.log('ページレンダリングのID:', questionId);
+  
   return (
     <div className="space-y-8">
-      <QuestionDetail questionId={params.id} />
+      <QuestionDetail questionId={questionId} />
     </div>
   );
 } 

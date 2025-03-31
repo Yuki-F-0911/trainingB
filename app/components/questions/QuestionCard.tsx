@@ -6,20 +6,27 @@ import { ja } from 'date-fns/locale';
 
 interface QuestionCardProps {
   question: {
-    _id: string;
+    _id?: string;
+    id?: string;
     title: string;
     content: string;
-    user: {
-      _id: string;
-      name: string;
+    user?: {
+      _id?: string;
+      id?: string;
+      name?: string;
     };
-    upvotes: number;
-    downvotes: number;
+    author?: {
+      _id?: string;
+      id?: string;
+      name?: string;
+    };
+    upvotes?: number;
+    downvotes?: number;
     tags?: string[];
     createdAt: string;
     isAIGenerated?: boolean;
-    answersCount: number;
-    views: number;
+    answersCount?: number;
+    views?: number;
   };
 }
 
@@ -28,11 +35,16 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
   const timeAgo = formatDistanceToNow(createdAt, { locale: ja, addSuffix: true });
   const tags = question.tags || [];
 
-  // 質問IDの検証（デバッグ用）
-  const questionId = question._id;
+  // 質問IDの取得（MongoDBの_idまたは通常のid）
+  const questionId = question._id || question.id;
+  
+  // IDが無効な場合のデバッグ情報
   if (!questionId) {
     console.error('無効な質問ID:', question);
   }
+
+  // ユーザー名を取得（異なるAPIのレスポンス形式に対応）
+  const userName = question.user?.name || question.author?.name || '不明';
 
   return (
     <div className="border rounded-lg shadow-sm p-6 bg-white hover:shadow-md transition duration-300">
@@ -48,10 +60,10 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
         </h2>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">
-            {question.answersCount} 回答
+            {question.answersCount || 0} 回答
           </span>
           <span className="text-sm text-gray-600">
-            {question.views} 閲覧
+            {question.views || 0} 閲覧
           </span>
         </div>
       </div>
@@ -68,7 +80,7 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
 
       <div className="flex justify-between items-center text-sm text-gray-600">
         <div className="flex items-center gap-2">
-          <span>投稿者: {question.user?.name || '不明'}</span>
+          <span>投稿者: {userName}</span>
           {question.isAIGenerated && (
             <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full text-xs">
               AI生成

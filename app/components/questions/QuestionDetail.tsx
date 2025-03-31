@@ -62,9 +62,9 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
         setLoading(true);
         setError(null);
         
-        // axios を使ってデータを取得する
+        // サーバーAPIに直接アクセスするよう修正
         console.log(`質問詳細を取得: ${questionId}`);
-        const response = await axios.get(`/api/questions/${questionId}`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'https://training-board-server.vercel.app/api'}/questions/${questionId}`);
         console.log('質問詳細データ:', response.data);
         
         // APIレスポンスの形式に応じてデータを抽出
@@ -105,7 +105,7 @@ const QuestionDetail = ({ questionId }: QuestionDetailProps) => {
       });
       
       // 成功したら質問を再取得
-      const updatedResponse = await axios.get(`/api/questions/${questionId}`);
+      const updatedResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'https://training-board-server.vercel.app/api'}/questions/${questionId}`);
       
       if (updatedResponse.data && updatedResponse.data.question) {
         setQuestion(updatedResponse.data.question);

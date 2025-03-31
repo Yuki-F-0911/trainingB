@@ -11,44 +11,83 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    await connectToDatabase();
-    
+    // IDの検証を強化
     const questionId = params.id;
+    console.log('API: 質問詳細リクエスト:', questionId);
     
-    // questionIdの検証
     if (!questionId || questionId === 'undefined') {
-      console.error('無効な質問ID:', questionId);
+      console.error('API: 無効な質問ID:', questionId);
       return NextResponse.json(
         { error: '無効な質問IDです', message: '有効な質問IDを指定してください' },
         { status: 400 }
       );
     }
     
+    // データベース接続
+    console.log('API: データベース接続開始');
+    await connectToDatabase();
+    console.log('API: データベース接続完了');
+    
+    // MongoDBからのクエリのデバッグログを追加
+    console.log('API: 質問検索', questionId);
     const question = await Question.findById(questionId)
       .populate("user", "name")
       .lean();
     
     if (!question) {
+      console.log('API: 質問が見つかりません', questionId);
       return NextResponse.json(
         { error: "質問が見つかりません" },
         { status: 404 }
       );
     }
     
+    console.log('API: 質問が見つかりました:', question._id);
+    
+    // MongoDBの_idを文字列に変換
+    const formattedQuestion = {
+      ...question,
+      id: question._id.toString(),
+    };
+    
     // 関連する回答も取得
+    console.log('API: 関連回答検索');
     const answers = await Answer.find({ question: questionId })
       .populate("user", "name")
       .sort("-upvotes") // 評価の高い順
       .lean();
     
-    return NextResponse.json({
-      question,
-      answers,
-    });
-  } catch (error: any) {
-    console.error("質問取得エラー:", error);
+    console.log(`API: ${answers.length}件の回答が見つかりました`);
+    
+    // 回答のIDも文字列に変換
+    const formattedAnswers = answers.map(answer => ({
+      ...answer,
+      id: answer._id.toString(),
+    }));
+    
+    // CORS設定を追加
     return NextResponse.json(
-      { error: error.message || "質問の取得中にエラーが発生しました" },
+      {
+        question: formattedQuestion,
+        answers: formattedAnswers,
+      },
+      {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        }
+      }
+    );
+  } catch (error: any) {
+    console.error("API質問取得エラー:", error);
+    // メッセージの改善
+    const errorMessage = error.name === 'CastError' && error.kind === 'ObjectId'
+      ? '無効な質問IDフォーマットです'
+      : error.message || "質問の取得中にエラーが発生しました";
+    
+    return NextResponse.json(
+      { error: errorMessage },
       { status: 500 }
     );
   }

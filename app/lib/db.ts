@@ -20,12 +20,16 @@ if (!global.mongoose) {
 export async function connectToDatabase() {
   try {
     if (cached.conn) {
+      console.log('既存のデータベース接続を使用');
       return cached.conn;
     }
 
     if (!cached.promise) {
+      console.log('新しいデータベース接続を開始:', MONGODB_URI);
       const opts = {
         bufferCommands: false,
+        serverSelectionTimeoutMS: 10000,
+        retryWrites: true,
       };
 
       cached.promise = mongoose.connect(MONGODB_URI, opts);
@@ -37,6 +41,7 @@ export async function connectToDatabase() {
   } catch (error) {
     console.error('データベース接続エラー:', error);
     cached.promise = null;
+    cached.conn = null;
     throw error;
   }
 } 
