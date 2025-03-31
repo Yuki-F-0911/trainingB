@@ -12,10 +12,10 @@
   "framework": "nextjs",
   "regions": ["hnd1"],
   "env": {
-    "MONGODB_URI": "@mongodb-uri",
-    "JWT_SECRET": "@jwt-secret",
-    "COOKIE_SECRET": "@cookie-secret",
-    "GEMINI_API_KEY": "@gemini-api-key",
-    "WEBHOOK_SECRET": "@webhook-secret"
+    "MONGODB_URI": "@mongodb_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "COOKIE_SECRET": "@cookie_secret",
+    "GEMINI_API_KEY": "@gemini_api_key",
+    "WEBHOOK_SECRET": "@webhook_secret"
   }
 } 
