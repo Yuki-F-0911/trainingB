@@ -13,7 +13,16 @@ export async function GET(
   try {
     await connectToDatabase();
     
-    const questionId = await params.id;
+    const questionId = params.id;
+    
+    // questionIdの検証
+    if (!questionId || questionId === 'undefined') {
+      console.error('無効な質問ID:', questionId);
+      return NextResponse.json(
+        { error: '無効な質問IDです', message: '有効な質問IDを指定してください' },
+        { status: 400 }
+      );
+    }
     
     const question = await Question.findById(questionId)
       .populate("user", "name")
