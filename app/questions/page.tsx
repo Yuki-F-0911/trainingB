@@ -62,17 +62,18 @@ export default function QuestionsPage() {
         secret: process.env.NEXT_PUBLIC_WEBHOOK_SECRET || 'zf&c;IXyflo/b'
       });
       
-      if (response.data && response.data.questionId) {
-        toast({
-          title: '成功',
-          description: 'AI質問が生成されました。更新して確認してください。',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        });
-        // 最新のデータを取得
+      toast({
+        title: '成功',
+        description: 'AI質問リクエストを送信しました。生成完了までしばらくお待ちください。',
+        status: 'success',
+        duration: 3000,
+        isClosable: true,
+      });
+      
+      // 少し待ってから最新データを取得（生成完了を待つ）
+      setTimeout(() => {
         fetchQuestions(1);
-      }
+      }, 5000);
     } catch (error: any) {
       console.error('AI質問生成エラー:', error);
       toast({
@@ -82,6 +83,8 @@ export default function QuestionsPage() {
         duration: 5000,
         isClosable: true,
       });
+    } finally {
+      // 必ずローディング状態を解除
       setLoading(false);
     }
   };
