@@ -33,10 +33,23 @@ export async function GET(req: NextRequest) {
       .populate("user", "name")
       .lean();
     
+    // IDが正しく取得されているか確認
+    const processedQuestions = questions.map(q => {
+      // MongoDBの_idオブジェクトを文字列に変換し、確実にIDを持つようにする
+      if (q._id) {
+        return {
+          ...q,
+          _id: q._id.toString()
+        };
+      }
+      console.error('質問データにIDがありません:', q);
+      return q;
+    }).filter(q => q._id); // IDが存在する質問のみ返す
+    
     const total = await Question.countDocuments(query);
     
     return NextResponse.json({
-      questions,
+      questions: processedQuestions,
       total,
       totalPages: Math.ceil(total / limit),
       currentPage: page,

@@ -28,13 +28,23 @@ const QuestionCard = ({ question }: QuestionCardProps) => {
   const timeAgo = formatDistanceToNow(createdAt, { locale: ja, addSuffix: true });
   const tags = question.tags || [];
 
+  // 質問IDの検証（デバッグ用）
+  const questionId = question._id;
+  if (!questionId) {
+    console.error('無効な質問ID:', question);
+  }
+
   return (
     <div className="border rounded-lg shadow-sm p-6 bg-white hover:shadow-md transition duration-300">
       <div className="flex justify-between items-start mb-2">
         <h2 className="text-xl font-semibold text-gray-900 hover:text-blue-600">
-          <Link href={`/questions/${question._id}`}>
-            {question.title}
-          </Link>
+          {questionId ? (
+            <Link href={`/questions/${questionId}`}>
+              {question.title}
+            </Link>
+          ) : (
+            <span>{question.title}</span>
+          )}
         </h2>
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">

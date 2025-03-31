@@ -35,7 +35,25 @@ const QuestionList = () => {
         }
         
         const data = await response.json();
-        setQuestions(data.questions || []);
+        
+        // 取得したデータを検証
+        if (data.questions && Array.isArray(data.questions)) {
+          // データの検証とIDの確認
+          const validQuestions = data.questions.filter(q => {
+            if (!q || !q._id) {
+              console.error('無効な質問データが含まれています:', q);
+              return false;
+            }
+            return true;
+          });
+          
+          console.log(`取得した質問: ${validQuestions.length}件, 無効データ: ${data.questions.length - validQuestions.length}件`);
+          setQuestions(validQuestions);
+        } else {
+          console.error('予期しない応答形式:', data);
+          setQuestions([]);
+        }
+        
         setTotalPages(data.totalPages || 1);
       } catch (err: any) {
         console.error('質問一覧取得エラー:', err);
