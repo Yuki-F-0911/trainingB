@@ -23,7 +23,7 @@ const QuestionList = () => {
         setLoading(true);
         setError('');
         
-        let url = `/api/questions?page=${page}&limit=${limit}&sort=${sort}`;
+        let url = `questions?page=${page}&limit=${limit}&sort=${sort}`;
         if (search) {
           url += `&search=${encodeURIComponent(search)}`;
         }
