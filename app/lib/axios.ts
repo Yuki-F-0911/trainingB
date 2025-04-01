@@ -6,11 +6,14 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 // API_URLが設定されていない場合は、現在のホストを使用
 const baseURL = API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 
-console.log('API_URL:', baseURL);
+// apiパスの重複を防ぐための処理
+const cleanBaseURL = baseURL.endsWith('/api') ? baseURL : `${baseURL}`;
+
+console.log('API_URL:', cleanBaseURL);
 
 // axiosのインスタンスを作成
 const instance = axios.create({
-  baseURL: `${baseURL}/api`,
+  baseURL: cleanBaseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

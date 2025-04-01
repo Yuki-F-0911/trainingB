@@ -21,8 +21,8 @@ export default function QuestionsPage() {
       setError('');
       console.log(`質問データを取得中... ページ: ${page}`);
       
-      // 公式APIサーバーから質問データを取得
-      const response = await axios.get(`/questions?page=${page}&limit=9`);
+      // APIエンドポイントに/apiプレフィックスを追加
+      const response = await axios.get(`/api/questions?page=${page}&limit=9`);
       console.log('質問データ取得結果:', response.data);
       
       // APIレスポンスを適切に処理
