@@ -10,7 +10,7 @@ const CRON_SECRET = process.env.CRON_SECRET;
 
 /**
  * CRONジョブによって呼び出されるエンドポイント
- * 質問と回答の自動生成を行います
+ * 質問と回答の自動生成を行います（軽量化版）
  */
 export async function GET(request: Request) {
   try {
@@ -35,15 +35,15 @@ export async function GET(request: Request) {
       errors: [] as string[],
     };
     
-    // ランダムで質問生成または回答生成を行う
-    const shouldGenerateQuestion = Math.random() > 0.5;
+    // 毎回全ての処理を行うのではなく、ランダムに1つだけ選択して実行
+    // これにより処理時間を短縮
+    const taskType = Math.floor(Math.random() * 2); // 0または1
     
-    if (shouldGenerateQuestion) {
-      // 質問生成
-      console.log('質問の自動生成を開始します');
-      try {
-        // 質問生成APIを呼び出し
-        const count = Math.floor(Math.random() * 2) + 1; // 1または2の質問を生成
+    try {
+      if (taskType === 0) {
+        // 質問生成タスク - 1件だけ生成
+        console.log('質問の自動生成を開始します（軽量版）');
+        
         const questionResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/ai`, {
           method: 'POST',
           headers: {
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
           },
           body: JSON.stringify({
             type: 'question',
-            count,
+            count: 1, // 常に1件だけ
           }),
         });
         
@@ -64,15 +64,10 @@ export async function GET(request: Request) {
         
         result.generatedQuestions = questionData.results?.filter((r: any) => r.success).length || 0;
         console.log(`${result.generatedQuestions}件の質問を生成しました`);
-      } catch (error: any) {
-        const errorMessage = `質問生成エラー: ${error.message}`;
-        console.error(errorMessage);
-        result.errors.push(errorMessage);
-      }
-    } else {
-      // 回答生成
-      console.log('回答の自動生成を開始します');
-      try {
+      } else {
+        // 回答生成タスク - 1件だけ生成
+        console.log('回答の自動生成を開始します（軽量版）');
+        
         // 回答がまだない質問の件数を確認
         const answeredQuestionIds = await Answer.distinct('question');
         const unansweredQuestionsCount = await Question.countDocuments({
@@ -80,8 +75,6 @@ export async function GET(request: Request) {
         });
         
         if (unansweredQuestionsCount > 0) {
-          // 回答生成APIを呼び出し
-          const limit = Math.min(Math.floor(Math.random() * 2) + 1, unansweredQuestionsCount); // 1または2の回答を生成
           const answerResponse = await fetch(`${process.env.NEXTAUTH_URL}/api/ai/autoAnswer`, {
             method: 'POST',
             headers: {
@@ -89,7 +82,7 @@ export async function GET(request: Request) {
               'authorization': `Bearer ${CRON_SECRET}`,
             },
             body: JSON.stringify({
-              limit,
+              limit: 1, // 常に1件だけ
             }),
           });
           
@@ -104,11 +97,11 @@ export async function GET(request: Request) {
         } else {
           console.log('回答が必要な質問はありません');
         }
-      } catch (error: any) {
-        const errorMessage = `回答生成エラー: ${error.message}`;
-        console.error(errorMessage);
-        result.errors.push(errorMessage);
       }
+    } catch (error: any) {
+      const errorMessage = `自動生成エラー: ${error.message}`;
+      console.error(errorMessage);
+      result.errors.push(errorMessage);
     }
     
     return NextResponse.json({
@@ -129,4 +122,4 @@ export async function GET(request: Request) {
 
 // Vercelの定期実行を確実にするためのディレクティブ
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 最大実行時間を設定（秒単位） 
+export const maxDuration = 60; // 300から60に変更（Hobbyプランの上限） 
