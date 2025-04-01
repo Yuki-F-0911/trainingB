@@ -1,7 +1,4 @@
 import mongoose from 'mongoose';
-import getConfig from 'next/config';
-
-const { serverRuntimeConfig } = getConfig();
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -12,7 +9,7 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const MONGODB_URI = serverRuntimeConfig.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error(
@@ -41,7 +38,7 @@ export async function connectToDatabase() {
         retryWrites: true,
       };
 
-      cached.promise = mongoose.connect(MONGODB_URI as string, opts);
+      cached.promise = mongoose.connect(MONGODB_URI, opts);
     }
 
     cached.conn = await cached.promise;

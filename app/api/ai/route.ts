@@ -6,16 +6,13 @@ import User from "@/app/models/User";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/auth.config";
 import { headers } from 'next/headers';
-import getConfig from 'next/config';
-
-const { serverRuntimeConfig } = getConfig();
 
 // APIキーの設定を確認
-const apiKey = serverRuntimeConfig.GEMINI_API_KEY || '';
+const apiKey = process.env.GEMINI_API_KEY || '';
 console.log('Gemini API Key設定状況:', apiKey ? '設定されています' : '未設定です');
 
 // CRONシークレットキー
-const CRON_SECRET = serverRuntimeConfig.CRON_SECRET;
+const CRON_SECRET = process.env.CRON_SECRET;
 
 // Gemini APIクライアントの初期化
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -175,7 +172,7 @@ const generateAnswer = async (questionId: string) => {
 // データベースに質問を保存する関数
 const saveToDatabase = async (data: any, type = 'question') => {
   try {
-    const baseUrl = serverRuntimeConfig.NEXTAUTH_URL || 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const endpoint = `${baseUrl}/api/ai/saveToDatabase`;
     console.log('データベース保存エンドポイント:', endpoint);
     
