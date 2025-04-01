@@ -1,13 +1,16 @@
 import axios from 'axios';
 
 // 環境変数からAPIのベースURLを取得
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
-console.log('API_URL:', API_URL);
+// API_URLが設定されていない場合は、現在のホストを使用
+const baseURL = API_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
+
+console.log('API_URL:', baseURL);
 
 // axiosのインスタンスを作成
 const instance = axios.create({
-  baseURL: API_URL,
+  baseURL: `${baseURL}/api`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

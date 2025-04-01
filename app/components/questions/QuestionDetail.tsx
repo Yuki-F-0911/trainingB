@@ -9,10 +9,13 @@ import { ja } from 'date-fns/locale';
 import AnswerList from '../answers/AnswerList';
 
 // APIのエンドポイントを環境変数から取得
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 // APIベースURLの正規化関数
 const normalizeApiUrl = (url: string) => {
+  if (!url) {
+    return typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+  }
   // /api で終わる場合はそのまま返す
   if (url.endsWith('/api')) {
     return url;
@@ -98,7 +101,6 @@ export const QuestionDetail = ({ questionId: propQuestionId }: QuestionDetailPro
         console.log(`[QuestionDetail] MongoDBのID形式: ${isMongoId}, AI生成ID形式の可能性: ${isAIGenId}`);
 
         // APIを呼び出して質問の詳細を取得
-        // APIエンドポイントパスの修正 - /api/ を含めるかどうかを確認
         const baseUrl = normalizeApiUrl(API_URL);
         const apiEndpoint = `${baseUrl}/questions/${id}`;
         console.log(`[QuestionDetail] API呼び出し: ${apiEndpoint}`);

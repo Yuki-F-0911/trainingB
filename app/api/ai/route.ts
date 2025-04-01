@@ -172,7 +172,10 @@ const generateAnswer = async (questionId: string) => {
 // データベースに質問を保存する関数
 const saveToDatabase = async (data: any, type = 'question') => {
   try {
-    const endpoint = `${process.env.NEXTAUTH_URL}/api/ai/saveToDatabase`;
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const endpoint = `${baseUrl}/api/ai/saveToDatabase`;
+    console.log('データベース保存エンドポイント:', endpoint);
+    
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
