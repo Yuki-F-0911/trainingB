@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import { connectDB } from '@/lib/mongodb';
 import { Question } from '@/models/Question';
 import { generateQuestions } from '@/lib/ai';
 
 export async function GET() {
   try {
     // データベースに接続
-    await connectToDatabase();
+    await connectDB();
 
     // 既存の質問数を確認
     const existingQuestionsCount = await Question.countDocuments();

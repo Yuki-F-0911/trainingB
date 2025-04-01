@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/app/lib/db';
-import Question from '@/app/models/Question';
-import Answer from '@/app/models/Answer';
-import User from '@/app/models/User';
+import { connectDB } from '@/lib/mongodb';
+import { Question } from '@/models/Question';
+import { Answer } from '@/models/Answer';
+import { User } from '@/models/User';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/auth.config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     }
     
     // データベースに接続
-    await connectToDatabase();
+    await connectDB();
     
     // リクエストボディから質問IDまたは条件を取得
     const { questionId, limit = 1 } = await request.json();
