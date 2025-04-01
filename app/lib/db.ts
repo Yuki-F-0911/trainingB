@@ -9,7 +9,13 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://s2110052:mrcCD3oL0V2E2wkJ@trainingboard.tsgbk.mongodb.net/training-board?retryWrites=true&w=majority&appName=TrainingBoard';
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  throw new Error(
+    'MONGODB_URIが設定されていません。環境変数MONGODB_URIを設定してください。'
+  );
+}
 
 let cached: MongooseCache = global.mongoose || { conn: null, promise: null };
 
@@ -18,30 +24,13 @@ if (!global.mongoose) {
 }
 
 export async function connectToDatabase() {
+  if (mongoose.connection.readyState >= 1) return;
+
   try {
-    if (cached.conn) {
-      console.log('既存のデータベース接続を使用');
-      return cached.conn;
-    }
-
-    if (!cached.promise) {
-      console.log('新しいデータベース接続を開始:', MONGODB_URI);
-      const opts = {
-        bufferCommands: false,
-        serverSelectionTimeoutMS: 10000,
-        retryWrites: true,
-      };
-
-      cached.promise = mongoose.connect(MONGODB_URI, opts);
-    }
-
-    cached.conn = await cached.promise;
-    console.log('データベース接続成功');
-    return cached.conn;
+    await mongoose.connect(MONGODB_URI as string);
+    console.log('MongoDBに接続しました');
   } catch (error) {
-    console.error('データベース接続エラー:', error);
-    cached.promise = null;
-    cached.conn = null;
+    console.error('MongoDB接続エラー:', error);
     throw error;
   }
 } 
