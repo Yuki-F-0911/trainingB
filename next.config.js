@@ -6,7 +6,7 @@ const nextConfig = {
     domains: ['lh3.googleusercontent.com'],
   },
   experimental: {
-    serverActions: true,
+    serverComponentsExternalPackages: ['mongoose']
   },
   // クライアント側で使用する環境変数のみを公開
   env: {
