@@ -19,11 +19,7 @@
     "JWT_SECRET": "cebd9db6dbd794872806f026140190db35b720bb38230f0dd6bc0b0c448b52df",
     "COOKIE_SECRET": "cebd9db6dbd794872806f026140190db35b720bb38230f0dd6bc0b0c448b52df",
     "WEBHOOK_SECRET": "zf&c;IXyflo/b",
-    "CRON_SECRET": "cebd9db6dbd794872806f026140190db35b720bb38230f0dd6bc0b0c448b52df"
-  },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "https://training-board-server.vercel.app/api"
-    }
+    "CRON_SECRET": "cebd9db6dbd794872806f026140190db35b720bb38230f0dd6bc0b0c448b52df",
+    "NEXT_PUBLIC_API_URL": "https://training-board-server.vercel.app/api"
   }
 } 
