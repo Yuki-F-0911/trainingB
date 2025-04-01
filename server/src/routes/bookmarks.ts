@@ -9,11 +9,11 @@ import {
 const router = express.Router();
 
 // すべてのルートに認証ミドルウェアを適用
-router.use(auth);
+router.use(auth as any);
 
 // ブックマークのルート
-router.get('/', getBookmarks);
-router.post('/', createBookmark);
-router.delete('/:questionId', deleteBookmark);
+router.get('/', getBookmarks as any);
+router.post('/', createBookmark as any);
+router.delete('/:questionId', deleteBookmark as any);
 
 export default router; 

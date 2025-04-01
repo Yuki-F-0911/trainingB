@@ -5,12 +5,12 @@ import { generateAnswer, evaluateAnswer, processWebhook } from '../controllers/a
 const router = express.Router();
 
 // AIのWebhook
-router.post('/webhook', processWebhook);
+router.post('/webhook', processWebhook as any);
 
 // AIに回答を生成させる
-router.post('/answers/generate', auth, generateAnswer);
+router.post('/answers/generate/:questionId', auth as any, generateAnswer as any);
 
 // AIの回答を評価する
-router.post('/answers/evaluate/:answerId', auth, evaluateAnswer);
+router.post('/answers/evaluate/:answerId', auth as any, evaluateAnswer as any);
 
 export default router; 

@@ -16,13 +16,13 @@ const router = express.Router();
 router.use('/:questionId/answers', answerRoutes);
 
 // 公開エンドポイント - 認証なしでアクセス可能
-router.get('/', getQuestions);
-router.get('/:id', getQuestion);
+router.get('/', getQuestions as any);
+router.get('/:id', getQuestion as any);
 
 // 認証が必要なエンドポイント
-router.post('/', auth, createQuestion);
-router.put('/:id', auth, updateQuestion);
-router.delete('/:id', auth, deleteQuestion);
-router.post('/:id/vote', auth, voteQuestion);
+router.post('/', auth as any, createQuestion as any);
+router.put('/:id', auth as any, updateQuestion as any);
+router.delete('/:id', auth as any, deleteQuestion as any);
+router.post('/:id/vote', auth as any, voteQuestion as any);
 
 export default router; 

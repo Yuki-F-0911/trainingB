@@ -6,18 +6,21 @@ import { User } from '../models/User';
 
 interface AuthRequest extends Request {
   user?: any;
+  body: any;
+  params: any;
 }
 
 // @desc    AIによるWebhook処理
 // @route   POST /api/ai/webhook
 // @access  Public (with secret)
-export const processWebhook = async (req: Request, res: Response) => {
+export const processWebhook = async (req: Request, res: Response): Promise<void> => {
   try {
     const { secret } = req.body;
     
     // Webhookのシークレットキーを検証
     if (secret !== process.env.WEBHOOK_SECRET) {
-      return res.status(401).json({ error: '無効なシークレットキーです' });
+      res.status(401).json({ error: '無効なシークレットキーです' });
+      return;
     }
 
     const model = getGeminiModel();
@@ -113,7 +116,7 @@ export const processWebhook = async (req: Request, res: Response) => {
 // @desc    AIによる質問生成
 // @route   POST /api/ai/generate-question
 // @access  Private
-export const generateQuestion = async (req: AuthRequest, res: Response) => {
+export const generateQuestion = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { topic } = req.body;
     const model = getGeminiModel();
@@ -157,13 +160,14 @@ export const generateQuestion = async (req: AuthRequest, res: Response) => {
 // @desc    AIによる回答生成
 // @route   POST /api/ai/generate-answer/:questionId
 // @access  Private
-export const generateAnswer = async (req: AuthRequest, res: Response) => {
+export const generateAnswer = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const questionId = req.params.questionId;
     const question = await Question.findById(questionId);
 
     if (!question) {
-      return res.status(404).json({ message: '質問が見つかりません' });
+      res.status(404).json({ message: '質問が見つかりません' });
+      return;
     }
 
     const model = getGeminiModel();
@@ -214,13 +218,14 @@ export const generateAnswer = async (req: AuthRequest, res: Response) => {
 // @desc    AIによる回答の評価
 // @route   POST /api/ai/evaluate-answer/:answerId
 // @access  Private
-export const evaluateAnswer = async (req: AuthRequest, res: Response) => {
+export const evaluateAnswer = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const answerId = req.params.answerId;
     const answer = await Answer.findById(answerId).populate('question');
 
     if (!answer) {
-      return res.status(404).json({ message: '回答が見つかりません' });
+      res.status(404).json({ message: '回答が見つかりません' });
+      return;
     }
 
     const model = getGeminiModel();

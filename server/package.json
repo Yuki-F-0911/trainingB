@@ -7,8 +7,16 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "@types/dotenv": "^6.1.1",
     "axios": "^1.8.4",
     "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "dotenv": "^16.4.7",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/jsonwebtoken": "^9.0.9"
   }
 }

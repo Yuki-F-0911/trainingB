@@ -1,4 +1,5 @@
 import express from 'express';
+import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -48,7 +49,7 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // データベース接続を確保するミドルウェア
-app.use(async (req, res, next) => {
+const dbMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   if (!isConnected) {
     try {
       console.log('データベース接続を開始します: ', process.env.MONGODB_URI);
@@ -78,7 +79,8 @@ app.use(async (req, res, next) => {
     }
   }
   next();
-});
+};
+app.use(dbMiddleware as any);
 
 // ルート
 app.use('/api/auth', authRoutes);
@@ -87,12 +89,12 @@ app.use('/api/bookmarks', bookmarkRoutes);
 app.use('/api/ai', aiRoutes);
 
 // ルートパスのハンドラー
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'トレーニング掲示板APIサーバーが正常に動作しています' });
 });
 
 // APIパスのハンドラー - デバッグ用
-app.get('/api', (req, res) => {
+app.get('/api', (req: Request, res: Response) => {
   res.json({ 
     message: 'APIルートが正常に動作しています',
     endpoints: {
@@ -105,7 +107,7 @@ app.get('/api', (req, res) => {
 });
 
 // ヘルスチェックエンドポイント
-app.get('/health', (req, res) => {
+app.get('/health', (req: Request, res: Response) => {
   const dbState = mongoose.connection.readyState;
   const dbStatus: Record<number, string> = {
     0: '切断済み',
@@ -122,7 +124,7 @@ app.get('/health', (req, res) => {
 });
 
 // 404ハンドラー - 一致するルートがない場合
-app.use((req, res) => {
+app.use((req: Request, res: Response) => {
   console.log(`404エラー: パス ${req.path} が見つかりません`);
   res.status(404).json({ 
     message: 'リクエストされたリソースが見つかりません',
@@ -132,7 +134,7 @@ app.use((req, res) => {
 });
 
 // エラーハンドラー
-app.use(errorHandler);
+app.use(errorHandler as any);
 
 // サーバーレス環境でモジュールをエクスポート
 module.exports = app; 
