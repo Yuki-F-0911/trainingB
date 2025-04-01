@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import getConfig from 'next/config';
+
+const { serverRuntimeConfig } = getConfig();
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -9,7 +12,7 @@ declare global {
   var mongoose: MongooseCache | undefined;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = serverRuntimeConfig.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error(
