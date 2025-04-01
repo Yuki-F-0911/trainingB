@@ -13,9 +13,15 @@
   "regions": ["hnd1"],
   "env": {
     "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret",
-    "COOKIE_SECRET": "@cookie_secret",
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
     "GEMINI_API_KEY": "@gemini_api_key",
-    "WEBHOOK_SECRET": "@webhook_secret"
+    "NEXT_PUBLIC_API_URL": "@next_public_api_url",
+    "CRON_SECRET": "@cron_secret"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_API_URL": "@next_public_api_url"
+    }
   }
 } 
