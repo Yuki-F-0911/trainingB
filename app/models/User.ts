@@ -55,6 +55,18 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.comparePassword = async function (password: string) {
   console.log('[User.comparePassword] Plain password received:', password);
   console.log('[User.comparePassword] Hashed password (this.password):', this.password);
+
+  // ★★★ 文字コードレベルでのデバッグログ ★★★
+  try {
+    const plainCodes = password ? Array.from(password).map(c => c.charCodeAt(0)).join(' ') : 'null';
+    const hashCodes = this.password ? Array.from(this.password).map(c => c.charCodeAt(0)).join(' ') : 'null';
+    console.log('[User.comparePassword] Plain char codes:', plainCodes);
+    console.log('[User.comparePassword] Hash char codes:', hashCodes);
+  } catch (e) {
+    console.error('[User.comparePassword] Error getting char codes:', e);
+  }
+  // ★★★ ------------- ★★★
+
   return await bcrypt.compare(password, this.password);
 };
 
