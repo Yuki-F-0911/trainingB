@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/app/lib/db";
 import User from "@/app/models/User";
-import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,14 +44,14 @@ export async function POST(req: NextRequest) {
 
     // パスワードのハッシュ化
     try {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+      // bcryptによるハッシュ化をここで行わない
+      // Userモデルのpreセーブフックでハッシュ化処理が行われる
 
       // ユーザー作成
       const user = new User({
         name,
         email,
-        password: hashedPassword,
+        password: password, // 生のパスワードをそのまま渡す
         username: name,
         isAI: false,
       });
