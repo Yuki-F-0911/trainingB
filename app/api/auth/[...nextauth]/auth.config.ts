@@ -29,6 +29,8 @@ export const authOptions = {
         }
 
         console.log('[Auth] User found:', user.email);
+        console.log('[Auth] Plain password from input:', credentials.password);
+        console.log('[Auth] Hashed password from DB:', user.password);
         console.log('[Auth] Comparing password for user:', user.email);
         const isValid = await bcrypt.compare(credentials.password, user.password);
         console.log('[Auth] Password validation result:', isValid);
