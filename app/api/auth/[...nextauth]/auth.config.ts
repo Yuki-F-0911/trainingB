@@ -31,6 +31,13 @@ export const authOptions = {
         console.log('[Auth] User found:', user.email);
         console.log('[Auth] Plain password from input:', credentials.password);
         console.log('[Auth] Hashed password from DB:', user.password);
+        console.log('[Auth] Type of input password:', typeof credentials.password, 'Length:', credentials.password?.length);
+        console.log('[Auth] Type of DB password:', typeof user.password, 'Length:', user.password?.length);
+        const trimmedInputPassword = credentials.password?.trim();
+        const trimmedDbPassword = user.password?.trim();
+        console.log('[Auth] Comparing trimmed passwords...');
+        const isValidTrimmed = await bcrypt.compare(trimmedInputPassword || '', trimmedDbPassword || '');
+        console.log('[Auth] Trimmed password validation result:', isValidTrimmed);
         console.log('[Auth] Comparing password for user:', user.email);
         const isValid = await bcrypt.compare(credentials.password, user.password);
         console.log('[Auth] Password validation result:', isValid);
