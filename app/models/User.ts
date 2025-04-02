@@ -35,6 +35,10 @@ const UserSchema = new Schema(
       enum: ['citizen', 'expert', 'trainer'],
       default: null,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
