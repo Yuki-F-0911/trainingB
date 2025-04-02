@@ -53,6 +53,8 @@ UserSchema.pre('save', async function (next) {
 
 // パスワードをチェック
 UserSchema.methods.comparePassword = async function (password: string) {
+  console.log('[User.comparePassword] Plain password received:', password);
+  console.log('[User.comparePassword] Hashed password (this.password):', this.password);
   return await bcrypt.compare(password, this.password);
 };
 
