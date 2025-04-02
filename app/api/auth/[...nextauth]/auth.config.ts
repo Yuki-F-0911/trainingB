@@ -38,6 +38,22 @@ export const authOptions = {
         console.log('[Auth] Comparing trimmed passwords...');
         const isValidTrimmed = await bcrypt.compare(trimmedInputPassword || '', trimmedDbPassword || '');
         console.log('[Auth] Trimmed password validation result:', isValidTrimmed);
+
+        // ★★★ bcrypt 自己完結テスト ★★★
+        try {
+          console.log('[Auth][Test] Running bcrypt self-test...');
+          const testPlain = 'testpassword123';
+          const testSalt = await bcrypt.genSalt(10);
+          console.log('[Auth][Test] Generated Salt:', testSalt);
+          const testHash = await bcrypt.hash(testPlain, testSalt);
+          console.log('[Auth][Test] Generated Hash:', testHash);
+          const testIsValid = await bcrypt.compare(testPlain, testHash);
+          console.log('[Auth][Test] bcrypt.compare self-test result:', testIsValid); // ★★★ これが true になるか？ ★★★
+        } catch (testError) {
+          console.error('[Auth][Test] bcrypt self-test failed:', testError);
+        }
+        // ★★★ ------------- ★★★
+
         console.log('[Auth] Comparing password for user:', user.email);
         const isValid = await bcrypt.compare(credentials.password, user.password);
         console.log('[Auth] Password validation result:', isValid);
