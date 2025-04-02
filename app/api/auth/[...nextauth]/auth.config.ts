@@ -55,7 +55,7 @@ export const authOptions = {
         // ★★★ ------------- ★★★
 
         console.log('[Auth] Comparing password for user:', user.email);
-        const isValid = await bcrypt.compare(credentials.password, user.password);
+        const isValid = await user.comparePassword(credentials.password);
         console.log('[Auth] Password validation result:', isValid);
 
         if (!isValid) {
