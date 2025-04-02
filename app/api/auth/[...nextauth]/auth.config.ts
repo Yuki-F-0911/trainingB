@@ -20,50 +20,18 @@ export const authOptions = {
           throw new Error("メールアドレスとパスワードを入力してください");
         }
 
-        console.log('[Auth] Finding user with email:', credentials.email);
         const user = await User.findOne({ email: credentials.email });
 
         if (!user) {
-          console.log('[Auth] User not found');
           throw new Error("ユーザーが見つかりません");
         }
 
-        console.log('[Auth] User found:', user.email);
-        console.log('[Auth] Plain password from input:', credentials.password);
-        console.log('[Auth] Hashed password from DB:', user.password);
-        console.log('[Auth] Type of input password:', typeof credentials.password, 'Length:', credentials.password?.length);
-        console.log('[Auth] Type of DB password:', typeof user.password, 'Length:', user.password?.length);
-        const trimmedInputPassword = credentials.password?.trim();
-        const trimmedDbPassword = user.password?.trim();
-        console.log('[Auth] Comparing trimmed passwords...');
-        const isValidTrimmed = await bcrypt.compare(trimmedInputPassword || '', trimmedDbPassword || '');
-        console.log('[Auth] Trimmed password validation result:', isValidTrimmed);
-
-        // ★★★ bcrypt 自己完結テスト ★★★
-        try {
-          console.log('[Auth][Test] Running bcrypt self-test...');
-          const testPlain = 'testpassword123';
-          const testSalt = await bcrypt.genSalt(10);
-          console.log('[Auth][Test] Generated Salt:', testSalt);
-          const testHash = await bcrypt.hash(testPlain, testSalt);
-          console.log('[Auth][Test] Generated Hash:', testHash);
-          const testIsValid = await bcrypt.compare(testPlain, testHash);
-          console.log('[Auth][Test] bcrypt.compare self-test result:', testIsValid); // ★★★ これが true になるか？ ★★★
-        } catch (testError) {
-          console.error('[Auth][Test] bcrypt self-test failed:', testError);
-        }
-        // ★★★ ------------- ★★★
-
-        console.log('[Auth] Comparing password for user:', user.email);
         const isValid = await user.comparePassword(credentials.password);
-        console.log('[Auth] Password validation result:', isValid);
 
         if (!isValid) {
-          console.log('[Auth] Password incorrect for user:', user.email);
           throw new Error("パスワードが正しくありません");
         }
 
-        console.log('[Auth] Password correct for user:', user.email);
         return {
           id: user._id.toString(),
           name: user.name,
