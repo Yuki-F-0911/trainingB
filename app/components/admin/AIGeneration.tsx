@@ -20,7 +20,7 @@ export default function AIGeneration() {
         }),
       });
 
-      if (response.status !== 202) {
+      if (response.status !== 200) {
           let errorMsg = 'リクエストの送信に失敗しました';
           try {
               const errorData = await response.json();
@@ -32,7 +32,8 @@ export default function AIGeneration() {
       }
 
       const data = await response.json();
-      toast.success(data.message || '生成リクエストを受け付けました');
+      toast.success(data.message || 'AI生成が完了しました');
+      console.log('生成結果:', data);
 
     } catch (error: any) {
       console.error('質問生成リクエストエラー:', error);
