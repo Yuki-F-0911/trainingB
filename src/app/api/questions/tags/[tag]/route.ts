@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
 import UserModel from '@/models/User'; // Userモデルをインポート (populateで使用するため)
@@ -6,14 +6,14 @@ import UserModel from '@/models/User'; // Userモデルをインポート (popul
 const DEFAULT_PAGE_LIMIT = 10; // 1ページあたりのデフォルト表示件数
 
 export async function GET(
-    request: Request, 
+    request: NextRequest,
     { params }: { params: { tag: string } }
 ) {
     await dbConnect();
     // User モデルが登録されていることを保証（populateエラー対策）
     UserModel;
 
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_LIMIT), 10);
     const tag = decodeURIComponent(params.tag); // URLエンコードされたタグ名をデコード
