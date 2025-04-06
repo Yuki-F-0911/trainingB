@@ -2,27 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { Question } from '@/types'; // 型定義をインポート
+import { IQuestion } from '@/models/Question'; // Import IQuestion instead of Question
 import Link from 'next/link';
 
-// 型定義 (QuestionList と共通化推奨)
-interface Question {
-    _id: string;
-    title: string;
-    content: string; 
-    answers: string[]; // 回答IDの配列
-    isAIGenerated: boolean;
-    // 他のフィールド...
-}
 interface QuestionsApiResponse {
-    questions: Question[];
+    questions: IQuestion[]; // Use IQuestion
     totalPages: number;
     currentPage?: number;
     totalQuestions?: number;
 }
 
 export default function AnswerGenerator() {
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<IQuestion[]>([]);
     const [loading, setLoading] = useState(true);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generateCount, setGenerateCount] = useState<number>(3); // デフォルト生成数
@@ -139,8 +130,8 @@ export default function AnswerGenerator() {
                 <>
                     <ul className="space-y-4 mb-6">
                         {questions.map((q) => (
-                            <li key={q._id} className="border p-4 rounded shadow-sm">
-                                <Link href={`/questions/${q._id}`} className="hover:text-blue-600">
+                            <li key={q._id.toString()} className="border p-4 rounded shadow-sm">
+                                <Link href={`/questions/${q._id.toString()}`} className="hover:text-blue-600">
                                     <h3 className="text-lg font-semibold mb-2">{q.title}</h3>
                                 </Link>
                                 <p className="text-gray-600 text-sm mb-2">{new Date(q.createdAt).toLocaleString()}</p>

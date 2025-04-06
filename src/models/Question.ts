@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, models, Model, Types } from 'mongoose';
 
 // Question ドキュメントのインターフェース定義
 export interface IQuestion extends Document {
+  _id: mongoose.Types.ObjectId;
   title: string;
   content: string;
   author?: Types.ObjectId | null; // Userへの参照、Nullable
