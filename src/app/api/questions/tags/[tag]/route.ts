@@ -1,24 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
-import UserModel from '@/models/User';
 
 const DEFAULT_PAGE_LIMIT = 10;
 
 // Next.js 15の型定義に合わせた単純化したAPIルート
 export async function GET(
   req: NextRequest,
-  // context引数を使わないようにする
+  { params }: { params: { tag: string } }  // contextパラメータを正しく使用
 ) {
   try {
-    // URLからタグを直接抽出（context経由ではなく）
-    const path = req.nextUrl.pathname;
-    const tagMatch = path.match(/\/api\/questions\/tags\/([^\/]+)/);
-    const tag = tagMatch ? decodeURIComponent(tagMatch[1]) : '';
+    // パラメータからタグを直接取得（URLからの抽出ではなく）
+    const tag = params.tag ? decodeURIComponent(params.tag) : '';
     
     if (!tag) {
       return NextResponse.json({ message: 'Tag parameter is required' }, { status: 400 });
     }
+    
+    console.log(`タグ検索API: "${tag}"`); // デバッグログ
     
     const searchParams = req.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -33,15 +32,15 @@ export async function GET(
 
     // データベース接続
     await dbConnect();
-    
-    // UserModelを明示的に読み込む処理は必要な場合のみにする
-    // (本APIでは単に参照するだけなので省略可能)
-    // await UserModel.findOne().select('_id').lean().exec();
 
     const skip = (page - 1) * limit;
 
     // 指定されたタグを持つ質問を検索（パフォーマンス向上のためlean()を使用）
-    const query = { tags: tag };
+    // タグのマッチングで大文字小文字を区別しないようにする
+    const tagRegex = new RegExp(`^${tag}$`, 'i');
+    const query = { tags: tagRegex };
+    
+    console.log(`タグ検索クエリ:`, query); // デバッグログ
     
     // クエリを一度だけ実行し、結果を変数に保存
     const [questions, totalQuestions] = await Promise.all([
@@ -53,6 +52,8 @@ export async function GET(
         .lean(),
       QuestionModel.countDocuments(query)
     ]);
+
+    console.log(`タグ検索結果: ${questions.length}件 / 合計: ${totalQuestions}件`); // デバッグログ
 
     // 総ページ数を計算
     const totalPages = Math.ceil(totalQuestions / limit);

@@ -5,7 +5,6 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import QuestionList from '@/components/QuestionList'; // 質問リストコンポーネントをインポート
-import Pagination from '@/components/Pagination'; // ページネーションコンポーネントをインポート
 import { IQuestion } from '@/models/Question'; // Questionの型定義をインポート
 
 interface TagPageResponse {
@@ -22,38 +21,57 @@ export default function TagPage() {
     const page = parseInt(searchParams.get('page') || '1', 10);
 
     const [questions, setQuestions] = useState<IQuestion[]>([]);
-    const [currentPage, setCurrentPage] = useState(page);
-    const [totalPages, setTotalPages] = useState(1);
-    const [totalQuestions, setTotalQuestions] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [totalQuestions, setTotalQuestions] = useState(0);
 
+    // useSearchParamsはリレンダリングごとに新しいオブジェクトを返すため、
+    // その値を直接依存配列に使用せず、実際の値だけを使用する
     useEffect(() => {
+        let isMounted = true;
+        let abortController = new AbortController();
+
         const fetchQuestionsByTag = async () => {
             if (!tag) return;
             setLoading(true);
             setError(null);
             try {
-                const response = await fetch(`/api/questions/tags/${encodeURIComponent(tag)}?page=${currentPage}`);
+                console.log(`Fetching questions for tag: ${tag}, page: ${page}`);
+                const response = await fetch(
+                    `/api/questions/tags/${encodeURIComponent(tag)}?page=${page}`, 
+                    { signal: abortController.signal }
+                );
+                
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(errorData.message || 'Failed to fetch questions for this tag');
                 }
+                
                 const data: TagPageResponse = await response.json();
-                setQuestions(data.questions || []);
-                setCurrentPage(data.currentPage || 1);
-                setTotalPages(data.totalPages || 1);
-                setTotalQuestions(data.totalQuestions || 0);
+                
+                if (isMounted) {
+                    setQuestions(data.questions || []);
+                    setTotalQuestions(data.totalQuestions || 0);
+                }
             } catch (err: any) {
-                setError(err.message || 'An error occurred');
-                toast.error(`質問の読み込みエラー: ${err.message}`);
+                if (err.name !== 'AbortError' && isMounted) {
+                    setError(err.message || 'An error occurred');
+                    toast.error(`質問の読み込みエラー: ${err.message}`);
+                }
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchQuestionsByTag();
-    }, [tag, currentPage]); // tagまたはcurrentPageが変わったら再取得
+
+        return () => {
+            isMounted = false;
+            abortController.abort();
+        };
+    }, [tag, page]); // 明示的にtagとpageだけを依存配列に含める
 
     if (loading) return <p className="text-center py-10">読み込み中...</p>;
     if (error) return <p className="text-center text-red-500 py-10">エラー: {error}</p>;
@@ -72,16 +90,7 @@ export default function TagPage() {
 
             <div className="w-full max-w-4xl">
                 {questions.length > 0 ? (
-                    <>
-                        <QuestionList questions={questions} />
-                        {totalPages > 1 && (
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                baseHref={`/tags/${encodeURIComponent(tag)}`}
-                            />
-                        )}
-                    </>
+                    <QuestionList questions={questions} fetchFromApi={false} />
                 ) : (
                     <p className="text-center text-gray-600 py-10">このタグが付いた質問はまだありません。</p>
                 )}
