@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { IQuestion } from '@/models/Question'; // Or the correct path to your Question type
 
 // Question 型定義 (APIレスポンスに合わせる)
 interface Question {
@@ -26,7 +27,11 @@ interface ApiResponse {
     totalQuestions: number;
 }
 
-export default function QuestionList() {
+interface QuestionListProps {
+  questions: IQuestion[];
+}
+
+export default function QuestionList({ questions }: QuestionListProps) {
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
