@@ -3,24 +3,57 @@
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image'; // Import Image component
+import { useState, FormEvent } from 'react'; // useState と FormEvent をインポート
+import { useRouter } from 'next/navigation'; // useRouter をインポート
 
 export default function Header() {
   // useSession フックからセッション状態とステータスを取得
   const { data: session, status } = useSession();
   const loading = status === 'loading'; // Check if session is loading
+  const router = useRouter(); // useRouter フックを使用
+  const [searchQuery, setSearchQuery] = useState(''); // 検索クエリの状態
+
+  // 検索フォームの送信ハンドラ
+  const handleSearchSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // デフォルトのフォーム送信をキャンセル
+    if (!searchQuery.trim()) return; // クエリが空または空白のみの場合は何もしない
+    router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`); // /search ページに遷移
+  };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50"> {/* Add sticky positioning */}
-      <nav className="container mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
+      <nav className="container mx-auto flex flex-wrap items-center justify-between px-4 py-3 sm:px-6">
         {/* Logo/Brand Name */}
-        <Link href="/" className="text-xl font-bold text-gray-800 hover:text-blue-600">
+        <Link href="/" className="text-xl font-bold text-gray-800 mr-4 shrink-0">
           Training Board
         </Link>
 
+        {/* Search Form */}
+        <div className="order-3 w-full sm:order-2 sm:w-auto sm:flex-grow sm:max-w-xs lg:max-w-md mt-2 sm:mt-0 sm:mr-4">
+           <form onSubmit={handleSearchSubmit} className="relative">
+             <input
+               type="search"
+               placeholder="質問を検索..."
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
+               className="w-full rounded-md border border-gray-300 py-1.5 px-3 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+             />
+             <button
+               type="submit"
+               className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-gray-400 hover:text-gray-600"
+               aria-label="検索"
+             >
+               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                 <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+               </svg>
+             </button>
+           </form>
+        </div>
+
         {/* Auth Links/User Info */}
-        <div className="flex items-center space-x-3 sm:space-x-4">
+        <div className="order-2 sm:order-3 flex items-center space-x-2 sm:space-x-4 shrink-0">
           {loading && (
-            <div className="h-8 w-20 animate-pulse rounded bg-gray-200"></div> // Simple loading placeholder
+            <span className="text-sm text-gray-500">読み込み中...</span>
           )}
 
           {!loading && session?.user && (
@@ -49,11 +82,8 @@ export default function Header() {
               {/* Logout Button */}
               <button
                 onClick={() => signOut({ callbackUrl: '/' })} // Redirect to home after logout
-                className="flex items-center rounded bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                className="rounded bg-red-500 px-2 py-1 text-sm text-white hover:bg-red-600 sm:px-3"
               >
-                 <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                 </svg>
                 ログアウト
               </button>
             </>
@@ -64,14 +94,14 @@ export default function Header() {
               {/* Login Button */}
               <button
                 onClick={() => signIn()} // Redirects to /login page defined in authOptions
-                className="rounded border border-blue-500 px-3 py-1.5 text-sm font-medium text-blue-500 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                className="rounded border border-blue-500 px-2 py-1 text-sm text-blue-500 hover:bg-blue-50 sm:px-3"
               >
                 ログイン
               </button>
               {/* Signup Link */}
               <Link
                 href="/signup"
-                className="rounded bg-blue-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                className="rounded bg-blue-500 px-2 py-1 text-sm text-white hover:bg-blue-600 sm:px-3"
               >
                 新規登録
               </Link>
