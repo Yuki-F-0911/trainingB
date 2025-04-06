@@ -137,13 +137,17 @@ export default function QuestionPage() {
             <div className="w-full max-w-4xl bg-white shadow-md rounded-lg p-6 md:p-8">
                 {/* 質問詳細 */}
                 <h1 className="text-2xl md:text-3xl font-bold mb-3">{question.title}</h1>
-                {/* タグ表示を追加 */}
+                {/* タグ表示をリンクに変更 */}
                 {question.tags && question.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                         {question.tags.map(tag => (
-                            <span key={tag} className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded">
+                            <Link 
+                                key={tag} 
+                                href={`/tags/${encodeURIComponent(tag)}`} 
+                                className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded hover:bg-blue-200 transition-colors duration-150"
+                            >
                                 {tag}
-                            </span>
+                            </Link>
                         ))}
                     </div>
                 )}
