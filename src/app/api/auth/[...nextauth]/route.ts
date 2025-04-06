@@ -29,7 +29,7 @@ declare module "next-auth/jwt" {
   }
 }
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   adapter: MongoDBAdapter(clientPromise),
   providers: [
