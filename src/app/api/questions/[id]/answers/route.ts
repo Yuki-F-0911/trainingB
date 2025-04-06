@@ -4,6 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import AnswerModel from '@/models/Answer';
 import QuestionModel from '@/models/Question';
 import mongoose from 'mongoose';
+import { notifyQuestionAuthorOfNewAnswer } from '@/lib/notificationService';
 // import { options } from '../../../auth/[...nextauth]/route'; // 必要に応じてパスを確認
 
 // POST: 特定の質問に回答を作成
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
     await dbConnect();
 
     // 対象の質問が存在するか確認 (任意だが推奨)
-    const questionExists = await QuestionModel.findById(questionId).select('_id').lean();
+    const questionExists = await QuestionModel.findById(questionId).select('_id author').lean();
     if (!questionExists) {
         return NextResponse.json({ message: 'Question not found' }, { status: 404 });
     }
@@ -76,6 +77,17 @@ export async function POST(request: Request) {
           // 何らかの理由で $push が失敗した場合
           console.warn(`Warning: Failed to push answer ${newAnswer._id} to question ${questionId}. Answer was saved but link might have failed.`);
           // エラー詳細を調査する必要があるかもしれない
+      } else {
+          // 回答が正常に追加された場合、質問の作成者に通知を送る
+          if (userId && questionExists.author && String(questionExists.author) !== String(userId)) {
+              try {
+                  await notifyQuestionAuthorOfNewAnswer(questionId, newAnswer._id, userId);
+                  console.log(`通知送信: 質問${questionId}の作成者に新しい回答について通知しました`);
+              } catch (notifyError) {
+                  // 通知の送信に失敗しても、メイン処理は続行
+                  console.error(`通知エラー: 質問${questionId}の作成者への通知に失敗しました`, notifyError);
+              }
+          }
       }
     } catch (updateError) {
         // QuestionModel.findByIdAndUpdate 自体がエラーを投げた場合

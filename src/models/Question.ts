@@ -10,6 +10,7 @@ export interface IQuestion extends Document {
   tags: string[]; // tags フィールドを追加
   isAIGenerated: boolean;
   aiPersonality?: string;
+  bestAnswer?: Types.ObjectId; // ベストアンサーへの参照
   createdAt: Date;
   updatedAt: Date;
 }
@@ -49,6 +50,11 @@ const QuestionSchema: Schema<IQuestion> = new Schema(
     },
     aiPersonality: {
       type: String,
+    },
+    bestAnswer: {
+      type: Schema.Types.ObjectId,
+      ref: 'Answer', // Answerモデルへの参照
+      default: null, // デフォルトはnull
     },
   },
   {

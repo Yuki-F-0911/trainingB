@@ -18,8 +18,12 @@ interface Question {
   } | null;
   createdAt: string;
   tags: string[];
+  answers?: any[]; // 回答数用に追加
   // 他のフィールドも必要に応じて追加
 }
+
+// ソートオプション追加
+type SortOption = 'newest' | 'most_answers' | 'unanswered';
 
 interface ApiResponse {
     questions: Question[];
@@ -61,10 +65,14 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
   // 現在のページをURLから取得（デフォルトは1）
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   
+  // 並び替えオプションをURLから取得（デフォルトは新着順）
+  const sortBy = searchParams.get('sort') as SortOption || 'newest';
+  
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(fetchFromApi);
   const [error, setError] = useState<string | null>(null);
   const [lastFetchedPage, setLastFetchedPage] = useState<number | null>(null);
+  const [lastSortOption, setLastSortOption] = useState<SortOption | null>(null);
 
   // コンポーネントがアンマウントされたときにフェッチを中止
   useEffect(() => {
@@ -76,7 +84,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     };
   }, []);
 
-  // 初回マウント時と、URLのページパラメータが変わったときのみデータを取得
+  // 初回マウント時と、URLのページパラメータやソートオプションが変わったときのみデータを取得
   useEffect(() => {
     // propQuestionsが提供され、APIからのフェッチが不要な場合はそれを使用
     if (propQuestions.length > 0 && !fetchFromApi) {
@@ -86,7 +94,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     }
 
     // 既に同じページのデータを取得済みなら再取得しない
-    if (fetchFromApi && (lastFetchedPage !== currentPage)) {
+    if (fetchFromApi && (lastFetchedPage !== currentPage || lastSortOption !== sortBy)) {
       // 前のリクエストをキャンセル
       if (abortController) {
         abortController.abort();
@@ -100,9 +108,10 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
         setLoading(true);
         setError(null);
         try {
-          console.log(`Fetching page ${currentPage}...`); // デバッグ用ログ
+          console.log(`Fetching page ${currentPage} with sort option ${sortBy}...`); // デバッグ用ログ
           
-          const response = await fetch(`/api/questions?page=${currentPage}&limit=10`, {
+          // ソートオプションをクエリに追加
+          const response = await fetch(`/api/questions?page=${currentPage}&limit=10&sort=${sortBy}`, {
             signal: currentController.signal
           });
           
@@ -119,6 +128,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
           const result: ApiResponse = await response.json();
           setData(result);
           setLastFetchedPage(currentPage); // 取得したページを記録
+          setLastSortOption(sortBy); // 取得した並び順を記録
         } catch (err: any) {
           // AbortErrorの場合はエラーメッセージを表示しない
           if (err.name === 'AbortError') {
@@ -135,17 +145,30 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
 
       fetchQuestions();
     }
-  }, [currentPage, propQuestions, fetchFromApi, lastFetchedPage]); // searchParamsとpathnameを依存配列から削除
+  }, [currentPage, propQuestions, fetchFromApi, lastFetchedPage, sortBy, lastSortOption]); // 依存配列にsortByとlastSortOptionを追加
 
   // クエリパラメータを更新する関数
-  const createPageUrl = (page: number) => {
+  const createPageUrl = (page: number, sort: SortOption = sortBy) => {
     const params = new URLSearchParams(searchParams.toString());
     if (page <= 1) {
       params.delete('page');
     } else {
       params.set('page', page.toString());
     }
+    
+    // ソートオプションを設定
+    if (sort === 'newest') {
+      params.delete('sort'); // デフォルト値の場合はクエリパラメータから削除
+    } else {
+      params.set('sort', sort);
+    }
+    
     return `${pathname}?${params.toString()}`;
+  };
+
+  // 並び替え選択時の処理
+  const handleSortChange = (sort: SortOption) => {
+    router.push(createPageUrl(1, sort)); // ソート変更時は1ページ目に戻す
   };
 
   // ページネーションボタン生成ロジック
@@ -214,7 +237,20 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
 
   return (
     <div className="w-full max-w-4xl mx-auto mt-8">
-      <h2 className="text-2xl font-semibold mb-6">質問リスト</h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-semibold">質問リスト</h2>
+        <div className="flex gap-2">
+          <select 
+            value={sortBy}
+            onChange={(e) => handleSortChange(e.target.value as SortOption)}
+            className="border border-gray-300 rounded px-3 py-1 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="newest">新着順</option>
+            <option value="most_answers">回答数順</option>
+            <option value="unanswered">未回答のみ</option>
+          </select>
+        </div>
+      </div>
       <ul className="space-y-4">
         {data.questions.map((q) => (
           <li key={q._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
@@ -239,9 +275,14 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
               <span>
                 投稿者: {q.author?.name || q.author?.email || '匿名'}
               </span>
-              <span>
-                投稿日時: {new Date(q.createdAt).toLocaleString('ja-JP')}
-              </span>
+              <div>
+                <span className="mr-4">
+                  回答数: {q.answers?.length || 0}
+                </span>
+                <span>
+                  投稿日時: {new Date(q.createdAt).toLocaleString('ja-JP')}
+                </span>
+              </div>
             </div>
           </li>
         ))}

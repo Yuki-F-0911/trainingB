@@ -70,18 +70,41 @@ export async function GET(request: Request) {
         const page = parseInt(searchParams.get('page') || '1', 10);
         const limit = parseInt(searchParams.get('limit') || '10', 10);
         const skip = (page - 1) * limit;
+        
+        // 並び替えオプションを取得
+        const sortOption = searchParams.get('sort') || 'newest';
+        
+        // クエリとソートオプションの準備
+        let query = {};
+        let sortCriteria: any = { createdAt: -1 }; // デフォルトは新着順
+        
+        // 未回答のみのフィルタリング
+        if (sortOption === 'unanswered') {
+            query = { 
+                $or: [
+                    { answers: { $size: 0 } },
+                    { answers: { $exists: false } }
+                ] 
+            };
+        }
+        
+        // 並び替えオプションの適用
+        if (sortOption === 'most_answers') {
+            // MongoDB の $size を使用して回答数でソート (降順)
+            sortCriteria = { 'answers.length': -1, createdAt: -1 };
+        }
 
-        // 質問を最新順に取得し、author情報をpopulate（ユーザー名など）
-        const questions = await QuestionModel.find()
+        // 質問を取得し、author情報をpopulate（ユーザー名など）
+        const questions = await QuestionModel.find(query)
             .select('+answers') // 明示的に answers フィールドを含める
             .populate('author', 'name email') // authorフィールドを展開し、nameとemailを取得
-            .sort({ createdAt: -1 }) // 作成日時の降順でソート
+            .sort(sortCriteria) // ソート条件の適用
             .skip(skip)
             .limit(limit)
             .exec();
 
         // 総質問数を取得 (ページネーションのため)
-        const totalQuestions = await QuestionModel.countDocuments();
+        const totalQuestions = await QuestionModel.countDocuments(query);
 
         return NextResponse.json({
             questions,
