@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     // セッションを取得（認証済みユーザーかどうかの確認）
     const session = await getServerSession(authOptions);
-    if (!session) {
+    if (!session || !session.user) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
