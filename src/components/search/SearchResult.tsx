@@ -1,6 +1,7 @@
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel, { IQuestion } from '@/models/Question';
 import Link from 'next/link';
+import UserModel from '@/models/User';
 
 interface SearchResultsProps {
   query: string;
@@ -11,6 +12,10 @@ async function fetchSearchResults(query: string): Promise<IQuestion[]> {
   if (!query) return []; // クエリがなければ空を返す
 
   await dbConnect();
+  
+  // モデルを明示的に読み込み
+  require('@/models/User');
+  
   // 入力をスペースで分割してキーワード配列を作成
   const keywords = query.split(/\s+/).filter(k => k.length > 0);
   
@@ -38,7 +43,7 @@ async function fetchSearchResults(query: string): Promise<IQuestion[]> {
     const questions = await QuestionModel.find({
       $and: keywordConditions,
     })
-    .populate('author', 'name') // Populate author name
+    // .populate('author', 'name') // 一時的にコメントアウト
     .sort({ createdAt: -1 })
     .lean(); // Use lean for performance and plain objects
 
