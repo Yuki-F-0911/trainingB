@@ -24,9 +24,9 @@ export default function Home() {
   }
 
   return (
-    <main className="flex flex-col items-center p-6 sm:p-12">
+    <main className="flex flex-col items-center p-4 sm:p-8">
       {/* メインコンテンツ */}
-      <div className="w-full max-w-4xl space-y-8">
+      <div className="w-full max-w-3xl space-y-6">
         {/* 質問投稿フォーム (ログイン時のみ表示) - カードスタイルを適用 */}
         {status === 'authenticated' && (
           <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">

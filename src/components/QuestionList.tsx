@@ -252,11 +252,11 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
           </select>
         </div>
       </div>
-      <ul className="space-y-6">
+      <ul className="space-y-4">
         {data.questions.map((q) => (
-          <li key={q._id} className="border border-gray-200 rounded-lg p-5 hover:shadow-lg transition-shadow duration-200 bg-white">
+          <li key={q._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow duration-200 bg-white">
             <Link href={`/questions/${q._id}`} className="block mb-2">
-              <h3 className="text-xl font-medium text-blue-700 hover:text-blue-800 hover:underline">{q.title}</h3>
+              <h3 className="text-lg font-medium text-blue-700 hover:text-blue-800 hover:underline">{q.title}</h3>
             </Link>
             {q.tags && q.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-3">
