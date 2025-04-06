@@ -5,7 +5,6 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import Image from 'next/image'; // Import Image component
 import { useState, FormEvent } from 'react'; // useState と FormEvent をインポート
 import { useRouter } from 'next/navigation'; // useRouter をインポート
-import NotificationDropdown from './NotificationDropdown'; // 通知ドロップダウンをインポート
 
 export default function Header() {
   // useSession フックからセッション状態とステータスを取得
@@ -61,9 +60,6 @@ export default function Header() {
 
           {!loading && session?.user && (
             <>
-              {/* 通知ドロップダウンを追加 */}
-              <NotificationDropdown />
-
               {/* Display User Image if available */}
               {session.user.image ? (
                  <Image
