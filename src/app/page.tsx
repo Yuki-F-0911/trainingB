@@ -1,10 +1,12 @@
 "use client"; // クライアントコンポーネントにする
 
-import { useState } from 'react'; // useState をインポート
+import { useState, useEffect } from 'react'; // useEffectも追加 
 import { useSession, signIn, signOut } from "next-auth/react";
 import Link from "next/link"; // Linkを追加
 import QuestionForm from "@/components/QuestionForm"; // QuestionForm をインポート
 import QuestionList from "@/components/QuestionList"; // QuestionList をインポート
+import { IQuestion } from '@/models/Question'; // IQuestion型をインポート
+import toast from 'react-hot-toast'; // トースト通知をインポート
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -60,8 +62,8 @@ export default function Home() {
         {status === 'authenticated' && (
           <QuestionForm onQuestionPosted={handleQuestionPosted} />
         )}
-        {/* 質問リスト */}
-        <QuestionList key={questionListKey} />
+        {/* 質問リスト - APIから自動的に質問を取得 */}
+        <QuestionList key={questionListKey} fetchFromApi={true} />
       </div>
 
     </main>

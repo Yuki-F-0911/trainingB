@@ -1,24 +1,28 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
 import UserModel from '@/models/User';
 
 const DEFAULT_PAGE_LIMIT = 10;
 
-// Next.js App Router API Routeの正しいシグネチャ
+// Next.js 15の型定義に合わせた単純化したAPIルート
 export async function GET(
-  request: Request,
-  { params }: { params: { tag: string } }
+  req: NextRequest,
+  // context引数を使わないようにする
 ) {
   try {
-    await dbConnect();
-    // User モデルの参照を確保
-    await UserModel.findOne().select('_id').lean().exec();
-
-    const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || '1', 10);
-    const limit = parseInt(url.searchParams.get('limit') || String(DEFAULT_PAGE_LIMIT), 10);
-    const tag = decodeURIComponent(params.tag);
+    // URLからタグを直接抽出（context経由ではなく）
+    const path = req.nextUrl.pathname;
+    const tagMatch = path.match(/\/api\/questions\/tags\/([^\/]+)/);
+    const tag = tagMatch ? decodeURIComponent(tagMatch[1]) : '';
+    
+    if (!tag) {
+      return NextResponse.json({ message: 'Tag parameter is required' }, { status: 400 });
+    }
+    
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_LIMIT), 10);
 
     if (page < 1) {
       return NextResponse.json({ message: 'Page must be greater than or equal to 1' }, { status: 400 });
@@ -26,25 +30,34 @@ export async function GET(
     if (limit < 1) {
       return NextResponse.json({ message: 'Limit must be greater than or equal to 1' }, { status: 400 });
     }
-    if (!tag) {
-      return NextResponse.json({ message: 'Tag parameter is required' }, { status: 400 });
-    }
+
+    // データベース接続
+    await dbConnect();
+    
+    // UserModelを明示的に読み込む処理は必要な場合のみにする
+    // (本APIでは単に参照するだけなので省略可能)
+    // await UserModel.findOne().select('_id').lean().exec();
 
     const skip = (page - 1) * limit;
 
-    // 指定されたタグを持つ質問を検索
+    // 指定されたタグを持つ質問を検索（パフォーマンス向上のためlean()を使用）
     const query = { tags: tag };
-    const questions = await QuestionModel.find(query)
-      .populate('author', 'name email')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    
+    // クエリを一度だけ実行し、結果を変数に保存
+    const [questions, totalQuestions] = await Promise.all([
+      QuestionModel.find(query)
+        .populate('author', 'name email')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      QuestionModel.countDocuments(query)
+    ]);
 
-    // 総件数を取得して総ページ数を計算
-    const totalQuestions = await QuestionModel.countDocuments(query);
+    // 総ページ数を計算
     const totalPages = Math.ceil(totalQuestions / limit);
 
+    // 結果を返す
     return NextResponse.json({
       questions,
       currentPage: page,

@@ -10,6 +10,28 @@ if (!MONGODB_URI) {
   );
 }
 
+// Mongoose接続の状態を監視するイベントハンドラーを設定
+mongoose.connection.on('connected', () => {
+  console.log('Mongoose: Connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('Mongoose: Connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('Mongoose: Disconnected from MongoDB');
+});
+
+// アプリケーション終了時に接続を閉じる
+if (typeof window === 'undefined') { // サーバーサイドでのみ実行
+  process.on('SIGINT', async () => {
+    await mongoose.connection.close();
+    console.log('Mongoose: Connection closed due to app termination');
+    process.exit(0);
+  });
+}
+
 // グローバルキャッシュの型定義 (既存の mongooseCache に加えて mongoClientPromise を追加)
 declare global {
   // eslint-disable-next-line no-var
@@ -24,32 +46,35 @@ if (!global.mongooseCache) {
   global.mongooseCache = { conn: null, promise: null };
 }
 if (!global.mongoClientPromise) {
-    global.mongoClientPromise = null;
+  global.mongoClientPromise = null;
 }
 
 async function dbConnect(): Promise<typeof mongoose> {
+  // データベースが既に接続状態にある場合はそれを返す
+  if (mongoose.connection.readyState === 1) {
+    return mongoose;
+  }
+  
   // キャッシュされた接続があればそれを返す
   if (global.mongooseCache.conn) {
-    console.log('Using cached Mongoose connection.');
     return global.mongooseCache.conn;
   }
 
   // キャッシュされたプロミスがあればそれを待つ
   if (!global.mongooseCache.promise) {
     const opts = {
-      bufferCommands: false, // コネクション確立前にコマンドをバッファリングしない
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 5000, // サーバー選択のタイムアウトを5秒に設定
+      maxPoolSize: 10, // 最大接続プール数を制限
     };
-    console.log('Creating new Mongoose connection promise.');
+    
     // 新しい接続プロミスを作成しキャッシュ
-    global.mongooseCache.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
-      return mongooseInstance;
-    });
+    global.mongooseCache.promise = mongoose.connect(MONGODB_URI!, opts);
   }
 
   try {
     // プロミスを解決し、接続をキャッシュして返す
     global.mongooseCache.conn = await global.mongooseCache.promise;
-    console.log('Mongoose connected successfully.'); // 接続成功ログ
   } catch (e) {
     // エラーが発生した場合はプロミスを null に戻す
     global.mongooseCache.promise = null;
@@ -60,25 +85,29 @@ async function dbConnect(): Promise<typeof mongoose> {
   return global.mongooseCache.conn;
 }
 
-// NextAuth アダプター用の MongoClient Promise をエクスポート
-let client: MongoClient;
+// NextAuth アダプター用の MongoClient Promise をエクスポート - シングルトンパターンに変更
 let clientPromise: Promise<MongoClient>;
-
-const options = {}; // 必要に応じて MongoClient のオプションを追加
 
 if (process.env.NODE_ENV === 'development') {
   // 開発モードでは、HMR によるモジュール再読み込み後も値を保持するためにグローバル変数を使用
-   if (!global.mongoClientPromise) {
-       client = new MongoClient(MONGODB_URI!, options);
-       global.mongoClientPromise = client.connect();
-       console.log('Creating new MongoClient connection promise (development).');
-   }
-   clientPromise = global.mongoClientPromise;
+  if (!global.mongoClientPromise) {
+    const client = new MongoClient(MONGODB_URI!);
+    // 接続時にログ出力を減らす
+    global.mongoClientPromise = client.connect()
+      .then(client => {
+        console.log('MongoDB client connection established');
+        return client;
+      });
+  }
+  clientPromise = global.mongoClientPromise;
 } else {
-  // 本番モードではグローバル変数を使用しない
-  client = new MongoClient(MONGODB_URI!, options);
-  clientPromise = client.connect();
-  console.log('Creating new MongoClient connection promise (production).');
+  // 本番モードでもシングルトンを使用（Vercel等の環境では重要）
+  const client = new MongoClient(MONGODB_URI!);
+  clientPromise = client.connect()
+    .then(client => {
+      console.log('MongoDB client connection established (production)');
+      return client;
+    });
 }
 
 // Mongoose 接続関数をデフォルトエクスポート (既存のコード用)
