@@ -131,10 +131,21 @@ export async function notifyBestAnswerSelection(
   const question = await QuestionModel.findById(questionId).populate('author', 'name email');
   if (!question) return null;
 
-  // 質問作成者の名前を取得
-  const questionAuthorName = question.author && typeof question.author === 'object' 
-    ? (question.author.name || question.author.email || '匿名ユーザー')
-    : '匿名ユーザー';
+  // 質問作成者の情報を取得
+  let questionAuthorName = '匿名ユーザー';
+  let authorId: Types.ObjectId | undefined = undefined;
+  
+  if (question.author) {
+    if (typeof question.author === 'object') {
+      // populate された場合
+      const author = question.author as any;
+      questionAuthorName = author.name || author.email || '匿名ユーザー';
+      authorId = author._id;
+    } else {
+      // populate されていない場合
+      authorId = question.author as Types.ObjectId;
+    }
+  }
 
   // 通知メッセージを作成
   const message = `${questionAuthorName}さんがあなたの回答をベストアンサーに選びました！`;
@@ -145,7 +156,7 @@ export async function notifyBestAnswerSelection(
     type: NotificationType.BEST_ANSWER,
     relatedQuestionId: questionId,
     relatedAnswerId: answerId,
-    actorId: question.author,
+    actorId: authorId,
     message,
   });
 }

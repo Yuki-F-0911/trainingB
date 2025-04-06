@@ -15,9 +15,10 @@ const ReactQuill = dynamic(() => import('react-quill'), {
 
 interface QuestionFormProps {
   onSuccess?: () => void;
+  onQuestionPosted?: () => void;
 }
 
-export default function QuestionForm({ onSuccess }: QuestionFormProps) {
+export default function QuestionForm({ onSuccess, onQuestionPosted }: QuestionFormProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -110,6 +111,11 @@ export default function QuestionForm({ onSuccess }: QuestionFormProps) {
       // 成功時のコールバックがあれば実行
       if (onSuccess) {
         onSuccess();
+      }
+      
+      // 質問投稿後のコールバックがあれば実行
+      if (onQuestionPosted) {
+        onQuestionPosted();
       }
 
       // 投稿が成功したら質問一覧ページにリダイレクト
