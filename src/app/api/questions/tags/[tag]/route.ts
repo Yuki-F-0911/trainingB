@@ -4,14 +4,14 @@ import QuestionModel from '@/models/Question';
 
 const DEFAULT_PAGE_LIMIT = 10;
 
-// Next.js 15の型定義に合わせた単純化したAPIルート
+// Next.jsのApp Routerに合わせた型定義
 export async function GET(
   req: NextRequest,
-  { params }: { params: { tag: string } }  // contextパラメータを正しく使用
+  context: { params: { tag: string } }
 ) {
   try {
-    // パラメータからタグを直接取得（URLからの抽出ではなく）
-    const tag = params.tag ? decodeURIComponent(params.tag) : '';
+    // パラメータからタグを直接取得
+    const tag = context.params.tag ? decodeURIComponent(context.params.tag) : '';
     
     if (!tag) {
       return NextResponse.json({ message: 'Tag parameter is required' }, { status: 400 });
