@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FaBell } from 'react-icons/fa';
 import { useSession } from 'next-auth/react';
-import { NotificationType } from '@/models/Notification';
+import { NotificationType } from '@/models/NotificationTypeClient';
 import toast from 'react-hot-toast';
 
 interface Notification {
