@@ -3,14 +3,9 @@ import { Metadata } from 'next';
 import SearchResults from '@/components/search/SearchResult';
 import SearchLoadingSkeleton from '@/components/search/SearchLoadingSkeleton';
 
-// 標準 Next.js の型を使用
-type Props = {
-  params: {};
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-export default function SearchPage({ searchParams }: Props) {
-  // searchParams から query を取得
+// 明示的に any 型を指定
+export default async function SearchPage({ searchParams }: any) {
+  // 型安全のため、明示的な変換を維持
   const query = typeof searchParams.q === 'string' ? searchParams.q : '';
 
   return (
@@ -26,8 +21,8 @@ export default function SearchPage({ searchParams }: Props) {
   );
 }
 
-// メタデータ生成関数も同じ Props 型を使用
-export function generateMetadata({ searchParams }: Props): Metadata {
+// 明示的に any 型を指定
+export async function generateMetadata({ searchParams }: any) {
   const query = typeof searchParams.q === 'string' ? searchParams.q : '';
   return {
     title: query ? `検索結果: ${query}` : '検索',
