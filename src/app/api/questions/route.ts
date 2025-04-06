@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from "next-auth/next";
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
+import '@/models/User'; // Import User model to ensure schema registration
 // NextAuthの設定をインポート (getServerSessionで使用する可能性があるため)
 // import { options } from '../auth/[...nextauth]/route'; // 必要に応じてパスを確認
 
