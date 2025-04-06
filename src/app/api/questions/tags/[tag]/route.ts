@@ -7,8 +7,8 @@ const DEFAULT_PAGE_LIMIT = 10; // 1ページあたりのデフォルト表示件
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { tag: string } }
-) {
+    context: { params: { tag: string } } // contextとしてラップする
+): Promise<NextResponse> { // 戻り値の型も明示的に指定
     await dbConnect();
     // User モデルが登録されていることを保証（populateエラー対策）
     UserModel;
@@ -16,7 +16,7 @@ export async function GET(
     const { searchParams } = request.nextUrl;
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_LIMIT), 10);
-    const tag = decodeURIComponent(params.tag); // URLエンコードされたタグ名をデコード
+    const tag = decodeURIComponent(context.params.tag); // context.paramsを参照
 
     if (page < 1) {
         return NextResponse.json({ message: 'Page must be greater than or equal to 1' }, { status: 400 });
