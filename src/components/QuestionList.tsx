@@ -182,7 +182,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     // 開始ページが1より大きい場合、最初のページへのリンクを追加
     if (startPage > 1) {
         pageNumbers.push(
-            <Link key={1} href={createPageUrl(1)} className="px-3 py-1 border rounded text-sm hover:bg-gray-100">
+            <Link key={1} href={createPageUrl(1)} className="px-4 py-2 border rounded hover:bg-gray-100">
                 1
             </Link>
         );
@@ -197,7 +197,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
             i === data.currentPage ? (
               <span
                   key={i}
-                  className="px-3 py-1 border rounded text-sm bg-blue-500 text-white"
+                  className="px-4 py-2 border rounded bg-blue-500 text-white"
               >
                   {i}
               </span>
@@ -205,7 +205,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
               <Link
                   key={i}
                   href={createPageUrl(i)}
-                  className="px-3 py-1 border rounded text-sm hover:bg-gray-100"
+                  className="px-4 py-2 border rounded hover:bg-gray-100"
               >
                   {i}
               </Link>
@@ -219,7 +219,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
             pageNumbers.push(<span key="end-ellipsis" className="px-1 py-1">...</span>);
         }
         pageNumbers.push(
-            <Link key={data.totalPages} href={createPageUrl(data.totalPages)} className="px-3 py-1 border rounded text-sm hover:bg-gray-100">
+            <Link key={data.totalPages} href={createPageUrl(data.totalPages)} className="px-4 py-2 border rounded hover:bg-gray-100">
                 {data.totalPages}
             </Link>
         );
@@ -252,14 +252,14 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
           </select>
         </div>
       </div>
-      <ul className="space-y-4">
+      <ul className="space-y-5">
         {data.questions.map((question) => (
           <li key={question._id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-            <Link href={`/questions/${question._id}`} className="block p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold text-blue-600 hover:underline mb-2">
+            <Link href={`/questions/${question._id}`} className="block p-6 sm:p-8">
+              <h3 className="text-xl sm:text-2xl font-semibold text-blue-600 hover:underline mb-3">
                 {question.title}
               </h3>
-              <div className="flex flex-wrap items-center text-xs sm:text-sm text-gray-500 mb-3 gap-x-3 gap-y-1">
+              <div className="flex flex-wrap items-center text-sm text-gray-500 mb-4 gap-x-4 gap-y-1">
                 <span>
                   投稿者: {question.author?.name || question.author?.email?.split('@')[0] || '匿名'}
                 </span>
@@ -271,9 +271,9 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
                 </span>
               </div>
               {question.tags && question.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {question.tags.map((tag) => (
-                    <span key={tag} className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs">
+                    <span key={tag} className="bg-gray-200 text-gray-700 px-2.5 py-1 rounded text-sm">
                       {tag}
                     </span>
                   ))}
@@ -285,16 +285,16 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
       </ul>
 
       {data && data.totalPages > 1 && (
-        <nav className="mt-8 flex justify-center items-center space-x-2">
+        <nav className="mt-8 flex justify-center items-center space-x-3">
           {data.currentPage > 1 ? (
             <Link
               href={createPageUrl(data.currentPage - 1)}
-              className="px-3 py-1 border rounded text-sm hover:bg-gray-100"
+              className="px-4 py-2 border rounded hover:bg-gray-100"
             >
               前へ
             </Link>
           ) : (
-            <span className="px-3 py-1 border rounded text-sm text-gray-400 cursor-not-allowed">
+            <span className="px-4 py-2 border rounded text-gray-400 cursor-not-allowed">
               前へ
             </span>
           )}
@@ -304,12 +304,12 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
           {data.currentPage < data.totalPages ? (
             <Link
               href={createPageUrl(data.currentPage + 1)}
-              className="px-3 py-1 border rounded text-sm hover:bg-gray-100"
+              className="px-4 py-2 border rounded hover:bg-gray-100"
             >
               次へ
             </Link>
           ) : (
-            <span className="px-3 py-1 border rounded text-sm text-gray-400 cursor-not-allowed">
+            <span className="px-4 py-2 border rounded text-gray-400 cursor-not-allowed">
               次へ
             </span>
           )}
