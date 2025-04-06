@@ -35,7 +35,7 @@ async function fetchSearchResults(query: string): Promise<IQuestion[]> {
   }
 }
 
-export default async function SearchPage({ searchParams }: SearchPageProps) {
+export default async function SearchPage({ searchParams }: { searchParams: { q?: string } }) {
   const query = searchParams.q || '';
 
   return (
@@ -51,7 +51,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
 }
 
-export async function generateMetadata({ searchParams }: SearchPageProps) {
+export async function generateMetadata({ searchParams }: { searchParams: { q?: string } }) {
   const query = searchParams.q || '';
   return {
     title: query ? `検索結果: ${query}` : '検索',
