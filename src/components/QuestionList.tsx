@@ -232,18 +232,19 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
   
   // データが無い場合のメッセージを明確化
   if (!data || data.questions.length === 0) {
-    return <p className="text-center mt-8">現在表示できる質問がありません。</p>;
+    return <p className="text-center mt-8 text-gray-500">現在表示できる質問がありません。</p>;
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="w-full">
+      <div className="flex justify-between items-center mb-6 border-b pb-4">
         <h2 className="text-2xl font-semibold">質問リスト</h2>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <span className="text-sm text-gray-600">並び替え:</span>
           <select 
             value={sortBy}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
-            className="border border-gray-300 rounded px-3 py-1 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="newest">新着順</option>
             <option value="most_answers">回答数順</option>
@@ -251,36 +252,39 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
           </select>
         </div>
       </div>
-      <ul className="space-y-4">
+      <ul className="space-y-6">
         {data.questions.map((q) => (
-          <li key={q._id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
-            <Link href={`/questions/${q._id}`} className="block">
-              <h3 className="text-xl font-medium text-blue-600 hover:underline mb-1">{q.title}</h3>
+          <li key={q._id} className="border border-gray-200 rounded-lg p-5 hover:shadow-lg transition-shadow duration-200 bg-white">
+            <Link href={`/questions/${q._id}`} className="block mb-2">
+              <h3 className="text-xl font-medium text-blue-700 hover:text-blue-800 hover:underline">{q.title}</h3>
             </Link>
             {q.tags && q.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
+              <div className="flex flex-wrap gap-1.5 mb-3">
                 {q.tags.map(tag => (
                   <Link 
                     key={tag} 
                     href={`/tags/${encodeURIComponent(tag)}`} 
-                    className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded hover:bg-blue-200 transition-colors"
+                    className="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-full hover:bg-gray-200 transition-colors"
                   >
                     {tag}
                   </Link>
                 ))}
               </div>
             )}
-            <p className="text-gray-700 truncate mb-2">{q.content}</p>
-            <div className="text-sm text-gray-500 flex justify-between">
+            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{q.content}</p>
+            <div className="text-xs text-gray-500 flex justify-between items-center border-t pt-3 mt-3">
               <span>
                 投稿者: {q.author?.name || q.author?.email || '匿名'}
               </span>
-              <div>
-                <span className="mr-4">
-                  回答数: {q.answers?.length || 0}
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-3.04 8.25-7.125 8.25a9.75 9.75 0 0 1-3.375 0C5.04 20.25 2 16.556 2 12c0-4.556 3.04-8.25 7.125-8.25a9.75 9.75 0 0 1 3.375 0C17.96 3.75 21 7.444 21 12Z" />
+                  </svg>
+                  {q.answers?.length || 0}
                 </span>
                 <span>
-                  投稿日時: {new Date(q.createdAt).toLocaleString('ja-JP')}
+                  {new Date(q.createdAt).toLocaleString('ja-JP', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             </div>
@@ -288,33 +292,35 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
         ))}
       </ul>
 
-      {/* ページネーション UI をリンクベースに変更 */}
+      {/* ページネーション UI */}
       {data && data.totalPages > 1 && fetchFromApi && (
-        <div className="mt-8 flex justify-center items-center gap-2">
+        <div className="mt-10 flex justify-center items-center gap-2">
           {data.currentPage > 1 ? (
             <Link
               href={createPageUrl(data.currentPage - 1)}
-              className="px-4 py-1 border rounded text-sm hover:bg-gray-100"
+              className="px-4 py-2 border rounded-md text-sm hover:bg-gray-100 transition-colors duration-150"
             >
               前へ
             </Link>
           ) : (
-            <span className="px-4 py-1 border rounded text-sm opacity-50 cursor-not-allowed">
+            <span className="px-4 py-2 border rounded-md text-sm text-gray-400 bg-gray-50 cursor-not-allowed">
               前へ
             </span>
           )}
           
-          {renderPageNumbers()}
+          {renderPageNumbers()?.map((el, index) => 
+            <React.Fragment key={index}>{el}</React.Fragment>)
+          }
           
           {data.currentPage < data.totalPages ? (
             <Link
               href={createPageUrl(data.currentPage + 1)}
-              className="px-4 py-1 border rounded text-sm hover:bg-gray-100"
+              className="px-4 py-2 border rounded-md text-sm hover:bg-gray-100 transition-colors duration-150"
             >
               次へ
             </Link>
           ) : (
-            <span className="px-4 py-1 border rounded text-sm opacity-50 cursor-not-allowed">
+            <span className="px-4 py-2 border rounded-md text-sm text-gray-400 bg-gray-50 cursor-not-allowed">
               次へ
             </span>
           )}
