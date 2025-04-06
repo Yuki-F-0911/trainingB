@@ -6,12 +6,12 @@ const DEFAULT_PAGE_LIMIT = 10;
 
 // Next.jsのApp Routerに合わせた型定義
 export async function GET(
-  req: NextRequest,
-  context: { params: { tag: string } }
+  request: NextRequest,
+  { params }: { params: { tag: string } }
 ) {
   try {
     // パラメータからタグを直接取得
-    const tag = context.params.tag ? decodeURIComponent(context.params.tag) : '';
+    const tag = params.tag ? decodeURIComponent(params.tag) : '';
     
     if (!tag) {
       return NextResponse.json({ message: 'Tag parameter is required' }, { status: 400 });
@@ -19,7 +19,7 @@ export async function GET(
     
     console.log(`タグ検索API: "${tag}"`); // デバッグログ
     
-    const searchParams = req.nextUrl.searchParams;
+    const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_LIMIT), 10);
 
