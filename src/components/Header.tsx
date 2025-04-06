@@ -33,6 +33,8 @@ export default function Header() {
            <form onSubmit={handleSearchSubmit} className="relative">
              <input
                type="search"
+               id="search-query"
+               name="search-query"
                placeholder="質問を検索..."
                value={searchQuery}
                onChange={(e) => setSearchQuery(e.target.value)}

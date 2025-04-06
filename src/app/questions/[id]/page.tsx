@@ -67,6 +67,8 @@ function AnswerForm({ questionId, onAnswerPosted }: { questionId: string, onAnsw
         <form onSubmit={handleSubmit} className="mt-6">
             <h3 className="text-lg font-semibold mb-2">回答を投稿する</h3>
             <textarea
+                id="answer-content"
+                name="answer-content"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
