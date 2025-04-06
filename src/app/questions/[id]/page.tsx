@@ -248,19 +248,19 @@ export default function QuestionPage() {
             <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg overflow-hidden mb-8">
                 <div className="p-6">
                     {/* タグ表示 */}
-                    {question.tags && question.tags.length > 0 && (
+                {question.tags && question.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-3">
-                            {question.tags.map(tag => (
-                                <Link
-                                    key={tag}
-                                    href={`/tags/${encodeURIComponent(tag)}`}
+                        {question.tags.map(tag => (
+                            <Link 
+                                key={tag} 
+                                href={`/tags/${encodeURIComponent(tag)}`} 
                                     className="bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium px-2.5 py-0.5 rounded hover:bg-blue-200 transition-colors duration-150"
-                                >
-                                    {tag}
-                                </Link>
-                            ))}
-                        </div>
-                    )}
+                            >
+                                {tag}
+                            </Link>
+                        ))}
+                    </div>
+                )}
                     {/* 質問タイトル */}
                     <h1 className="text-2xl md:text-3xl font-bold mb-4">{question.title}</h1>
                     {/* 投稿者情報と投稿日時 */}
@@ -275,12 +275,12 @@ export default function QuestionPage() {
                         dangerouslySetInnerHTML={{ __html: question.content || '' }} // XSSに注意
                     />
                 </div>
-            </div>
+                </div>
 
             {/* 回答セクション */}
             <div className="max-w-4xl mx-auto">
                 <h2 className="text-xl font-semibold mb-5">{sortedAnswers.length}件の回答</h2>
-                
+
                 {/* 回答リスト */}
                 {sortedAnswers.length > 0 ? (
                     <ul className="space-y-6 mb-8">
@@ -293,8 +293,8 @@ export default function QuestionPage() {
                                         <div className="inline-flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold mb-3">
                                             <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
                                             ベストアンサー
-                                        </div>
-                                    )}
+                                    </div>
+                                )}
                                     {/* 回答内容 (リッチテキスト表示) */}
                                     <div 
                                         className="prose prose-sm sm:prose max-w-none mb-4 ql-editor"
@@ -305,30 +305,30 @@ export default function QuestionPage() {
                                         <div className="text-xs text-gray-500 mb-3 sm:mb-0">
                                             <span className="font-medium text-gray-700 mr-2">{answer.user?.name || answer.user?.email || '匿名'}</span>
                                             <span>{new Date(answer.createdAt).toLocaleString('ja-JP')} に回答</span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
+                                    </div>
+                                    <div className="flex items-center gap-3">
                                             {/* いいねボタン */}
-                                            <button
+                                        <button 
                                                 className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded ${
-                                                    answer.likedBy?.includes(currentUserId as string)
-                                                        ? 'bg-blue-100 text-blue-700'
+                                                answer.likedBy?.includes(currentUserId as string) 
+                                                    ? 'bg-blue-100 text-blue-700' 
                                                         : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                                                }`}
-                                                onClick={() => handleLikeAnswer(answer._id)}
-                                                disabled={!session}
-                                            >
+                                            }`}
+                                            onClick={() => handleLikeAnswer(answer._id)}
+                                            disabled={!session}
+                                        >
                                                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.868.868L6 10.333z"></path></svg>
                                                 <span>いいね！ ({answer.likes || 0})</span>
-                                            </button>
+                                        </button>
                                             {/* ベストアンサーに選ぶボタン */}
                                             {isAuthor && !question.bestAnswer && (
-                                                <button
+                                            <button 
                                                     className="bg-green-100 hover:bg-green-200 text-green-700 text-xs px-2.5 py-1 rounded"
-                                                    onClick={() => handleSetBestAnswer(answer._id)}
-                                                >
-                                                    ベストアンサーに選ぶ
-                                                </button>
-                                            )}
+                                                onClick={() => handleSetBestAnswer(answer._id)}
+                                            >
+                                                ベストアンサーに選ぶ
+                                            </button>
+                                        )}
                                             {/* 選択済みベストアンサーへの表示 (選択ボタンの代わり) */}
                                             {isAuthor && question.bestAnswer === answer._id && (
                                                 <span className="text-green-700 text-xs font-medium">選択済み</span>
@@ -345,7 +345,7 @@ export default function QuestionPage() {
 
                 {/* 回答投稿フォーム (カードデザイン) */}
                 <div className="bg-white shadow rounded-lg p-6">
-                    <AnswerForm questionId={questionId} onAnswerPosted={fetchQuestionData} />
+                <AnswerForm questionId={questionId} onAnswerPosted={fetchQuestionData} />
                 </div>
             </div>
         </main>
