@@ -1,17 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
 
 const DEFAULT_PAGE_LIMIT = 10;
 
-// Next.jsのApp Routerに合わせた型定義
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { tag: string } }
-) {
+export async function GET(request: Request) {
   try {
-    // パラメータからタグを直接取得
-    const tag = params.tag ? decodeURIComponent(params.tag) : '';
+    // URLからタグパラメータを取得
+    const urlParts = request.url.split('/');
+    const tagEncoded = urlParts[urlParts.length - 1].split('?')[0]; // クエリパラメータがある場合は除去
+    const tag = decodeURIComponent(tagEncoded);
     
     if (!tag) {
       return NextResponse.json({ message: 'Tag parameter is required' }, { status: 400 });
@@ -19,7 +17,9 @@ export async function GET(
     
     console.log(`タグ検索API: "${tag}"`); // デバッグログ
     
-    const searchParams = request.nextUrl.searchParams;
+    // URLからクエリパラメータを取得
+    const url = new URL(request.url);
+    const searchParams = url.searchParams;
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || String(DEFAULT_PAGE_LIMIT), 10);
 
