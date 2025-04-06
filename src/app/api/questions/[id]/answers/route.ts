@@ -5,6 +5,7 @@ import AnswerModel from '@/models/Answer';
 import QuestionModel from '@/models/Question';
 import mongoose from 'mongoose';
 import { notifyQuestionAuthorOfNewAnswer } from '@/lib/notificationService';
+import { authOptions } from '@/lib/auth';
 // import { options } from '../../../auth/[...nextauth]/route'; // 必要に応じてパスを確認
 
 // POST: 特定の質問に回答を作成
@@ -26,7 +27,10 @@ export async function POST(request: Request) {
   //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   // }
   // const userId = (session.user as any).id;
-  const userId = null; // 仮に null を設定（後で認証と連携）
+
+  // 認証処理を適用する
+  const session = await getServerSession(authOptions);
+  const userId = session?.user?.id ? (session.user.id as string) : new mongoose.Types.ObjectId().toString();
 
   // Question ID が有効かチェック
   if (!mongoose.Types.ObjectId.isValid(questionId)) {
@@ -81,7 +85,11 @@ export async function POST(request: Request) {
           // 回答が正常に追加された場合、質問の作成者に通知を送る
           if (userId && questionExists.author && String(questionExists.author) !== String(userId)) {
               try {
-                  await notifyQuestionAuthorOfNewAnswer(questionId, newAnswer._id, userId);
+                  await notifyQuestionAuthorOfNewAnswer(
+                    String(questionId), 
+                    String(newAnswer._id), 
+                    String(userId)
+                  );
                   console.log(`通知送信: 質問${questionId}の作成者に新しい回答について通知しました`);
               } catch (notifyError) {
                   // 通知の送信に失敗しても、メイン処理は続行
