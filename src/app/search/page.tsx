@@ -1,12 +1,17 @@
-import dbConnect from '@/lib/dbConnect';
-import QuestionModel, { IQuestion } from '@/models/Question';
-import Link from 'next/link';
 import { Suspense } from 'react';
+import { Metadata } from 'next';
 import SearchResults from '@/components/search/SearchResult';
 import SearchLoadingSkeleton from '@/components/search/SearchLoadingSkeleton';
 
-export default async function SearchPage(props: { searchParams: { q?: string } }) {
-  const query = props.searchParams?.q || '';
+// 標準 Next.js の型を使用
+type Props = {
+  params: {};
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+export default function SearchPage({ searchParams }: Props) {
+  // searchParams から query を取得
+  const query = typeof searchParams.q === 'string' ? searchParams.q : '';
 
   return (
     <div>
@@ -21,8 +26,9 @@ export default async function SearchPage(props: { searchParams: { q?: string } }
   );
 }
 
-export async function generateMetadata(props: { searchParams: { q?: string } }) {
-  const query = props.searchParams?.q || '';
+// メタデータ生成関数も同じ Props 型を使用
+export function generateMetadata({ searchParams }: Props): Metadata {
+  const query = typeof searchParams.q === 'string' ? searchParams.q : '';
   return {
     title: query ? `検索結果: ${query}` : '検索',
   };
