@@ -11,19 +11,39 @@ async function fetchSearchResults(query: string): Promise<IQuestion[]> {
   if (!query) return []; // クエリがなければ空を返す
 
   await dbConnect();
-  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
+  // 入力をスペースで分割してキーワード配列を作成
+  const keywords = query.split(/\s+/).filter(k => k.length > 0);
+  
   try {
+    // キーワードがない場合は空の配列を返す
+    if (keywords.length === 0) {
+      return [];
+    }
+
+    // 各キーワードに対して$orクエリを作成
+    const keywordConditions = keywords.map(keyword => {
+      // 正規表現検索用にエスケープ
+      const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return {
+        $or: [
+          { title: { $regex: escapedKeyword, $options: 'i' } },
+          { content: { $regex: escapedKeyword, $options: 'i' } },
+          // タグ検索も追加（タグがある場合）
+          { tags: { $regex: escapedKeyword, $options: 'i' } }
+        ]
+      };
+    });
+
+    // すべてのキーワードに一致する質問を検索（AND検索）
     const questions = await QuestionModel.find({
-      $or: [
-        { title: { $regex: escapedQuery, $options: 'i' } },
-        { content: { $regex: escapedQuery, $options: 'i' } },
-      ],
+      $and: keywordConditions,
     })
     .populate('author', 'name') // Populate author name
     .sort({ createdAt: -1 })
     .lean(); // Use lean for performance and plain objects
 
+    console.log(`検索結果数: ${questions.length}, キーワード: ${keywords.join(', ')}`);
+    
     // lean() should handle Date serialization, but double-check if needed
     return JSON.parse(JSON.stringify(questions));
 
@@ -33,7 +53,6 @@ async function fetchSearchResults(query: string): Promise<IQuestion[]> {
     return [];
   }
 }
-
 
 // このコンポーネントはサーバーでレンダリングされ、データ取得を待ちます
 export default async function SearchResults({ query }: SearchResultsProps) {
