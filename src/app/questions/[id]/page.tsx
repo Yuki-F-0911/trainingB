@@ -226,94 +226,127 @@ export default function QuestionPage() {
     if (error) return <p className="text-center text-red-500 py-10">エラー: {error}</p>;
     if (!question) return <p className="text-center py-10">質問が見つかりませんでした。</p>;
 
+    // 回答をベストアンサー、それ以外でソート
+    const sortedAnswers = [...question.answers].sort((a, b) => {
+      if (a._id === question.bestAnswer) return -1;
+      if (b._id === question.bestAnswer) return 1;
+      // ここでさらに日時などでソートすることも可能
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    });
+
     return (
-        <main className="flex min-h-screen flex-col items-center p-6 sm:p-12 md:p-24">
-             <header className="w-full max-w-4xl mb-8">
+        // ページ全体の左右パディングを調整
+        <main className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+             {/* 戻るボタンはヘッダーに含める方が一般的だが、一旦ここに置く */}
+             <div className="max-w-4xl mx-auto mb-4">
                 <Link href="/" className="text-blue-600 hover:underline">
                     &larr; 質問リストに戻る
                 </Link>
-            </header>
+            </div>
 
-            <div className="w-full max-w-4xl bg-white shadow-md rounded-lg p-6 md:p-8">
-                {/* 質問詳細 */}
-                <h1 className="text-2xl md:text-3xl font-bold mb-3">{question.title}</h1>
-                {/* タグ表示をリンクに変更 */}
-                {question.tags && question.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {question.tags.map(tag => (
-                            <Link 
-                                key={tag} 
-                                href={`/tags/${encodeURIComponent(tag)}`} 
-                                className="bg-blue-100 text-blue-800 text-sm font-medium px-2.5 py-0.5 rounded hover:bg-blue-200 transition-colors duration-150"
-                            >
-                                {tag}
-                            </Link>
-                        ))}
+            {/* 質問セクション - カードデザイン */}
+            <div className="max-w-4xl mx-auto bg-white shadow-md rounded-lg overflow-hidden mb-8">
+                <div className="p-6">
+                    {/* タグ表示 */}
+                    {question.tags && question.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-3">
+                            {question.tags.map(tag => (
+                                <Link
+                                    key={tag}
+                                    href={`/tags/${encodeURIComponent(tag)}`}
+                                    className="bg-blue-100 text-blue-800 text-xs sm:text-sm font-medium px-2.5 py-0.5 rounded hover:bg-blue-200 transition-colors duration-150"
+                                >
+                                    {tag}
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                    {/* 質問タイトル */}
+                    <h1 className="text-2xl md:text-3xl font-bold mb-4">{question.title}</h1>
+                    {/* 投稿者情報と投稿日時 */}
+                    <div className="flex items-center text-sm text-gray-500 mb-5">
+                        {/* TODO: アバター画像表示 */}
+                        <span className="font-medium text-gray-700 mr-3">{question.author?.name || question.author?.email || '匿名'}</span>
+                        <span>{new Date(question.createdAt).toLocaleString('ja-JP')} に投稿</span>
                     </div>
-                )}
-                <div className="text-sm text-gray-500 mb-4">
-                    <span>投稿者: {question.author?.name || question.author?.email || '匿名'}</span>
-                    <span className="ml-4">投稿日時: {new Date(question.createdAt).toLocaleString('ja-JP')}</span>
+                    {/* 質問内容 (リッチテキスト表示) */}
+                    <div 
+                        className="prose prose-sm sm:prose max-w-none mb-6 ql-editor" // prose と ql-editor を併用
+                        dangerouslySetInnerHTML={{ __html: question.content || '' }} // XSSに注意
+                    />
                 </div>
-                <div className="prose max-w-none mb-8">
-                    {/* ここでは単純にテキスト表示。Markdown対応が必要ならライブラリ導入 */}
-                    <p>{question.content}</p>
-                </div>
+            </div>
 
-                <hr className="my-6 md:my-8"/>
-
+            {/* 回答セクション */}
+            <div className="max-w-4xl mx-auto">
+                <h2 className="text-xl font-semibold mb-5">{sortedAnswers.length}件の回答</h2>
+                
                 {/* 回答リスト */}
-                <h2 className="text-xl font-semibold mb-4">回答 ({question.answers.length})</h2>
-                {question.answers.length > 0 ? (
-                    <ul className="space-y-6">
-                        {question.answers.map(answer => (
-                            <li key={answer._id} className={`border-t border-gray-200 pt-4 ${answer.isBestAnswer || answer._id === question.bestAnswer ? 'bg-green-50 p-4 rounded-lg border border-green-200' : ''}`}>
-                                {(answer.isBestAnswer || answer._id === question.bestAnswer) && (
-                                    <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium inline-block mb-3">
-                                        ✓ ベストアンサー
-                                    </div>
-                                )}
-                                <div className="prose max-w-none mb-2">
-                                    <p>{answer.content}</p>
-                                </div>
-                                <div className="flex justify-between items-center mt-4">
-                                    <div className="text-sm text-gray-500">
-                                        <span>回答者: {answer.user?.name || answer.user?.email || '匿名'}</span>
-                                        <span className="ml-4">回答日時: {new Date(answer.createdAt).toLocaleString('ja-JP')}</span>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <button 
-                                            className={`flex items-center gap-1 text-sm px-3 py-1 rounded ${
-                                                answer.likedBy?.includes(currentUserId as string) 
-                                                    ? 'bg-blue-100 text-blue-700' 
-                                                    : 'bg-gray-100 hover:bg-gray-200'
-                                            }`}
-                                            onClick={() => handleLikeAnswer(answer._id)}
-                                            disabled={!session}
-                                        >
-                                            <span>👍</span>
-                                            <span>いいね！ {answer.likes || 0}</span>
-                                        </button>
-                                        
-                                        {isAuthor && !answer.isBestAnswer && answer._id !== question.bestAnswer && (
-                                            <button 
-                                                className="bg-green-100 hover:bg-green-200 text-green-800 text-sm px-3 py-1 rounded"
-                                                onClick={() => handleSetBestAnswer(answer._id)}
+                {sortedAnswers.length > 0 ? (
+                    <ul className="space-y-6 mb-8">
+                        {sortedAnswers.map(answer => (
+                            // 回答カード
+                            <li key={answer._id} className={`bg-white shadow rounded-lg overflow-hidden ${answer._id === question.bestAnswer ? 'border-2 border-green-400' : 'border border-gray-200'}`}>
+                                <div className="p-5">
+                                    {/* ベストアンサー表示 */}
+                                    {answer._id === question.bestAnswer && (
+                                        <div className="inline-flex items-center bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold mb-3">
+                                            <svg className="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
+                                            ベストアンサー
+                                        </div>
+                                    )}
+                                    {/* 回答内容 (リッチテキスト表示) */}
+                                    <div 
+                                        className="prose prose-sm sm:prose max-w-none mb-4 ql-editor"
+                                        dangerouslySetInnerHTML={{ __html: answer.content || '' }} // XSSに注意
+                                    />
+                                    {/* 回答者情報、日時、いいね、ベストアンサー選択ボタン */}
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 border-t border-gray-200 pt-4">
+                                        <div className="text-xs text-gray-500 mb-3 sm:mb-0">
+                                            <span className="font-medium text-gray-700 mr-2">{answer.user?.name || answer.user?.email || '匿名'}</span>
+                                            <span>{new Date(answer.createdAt).toLocaleString('ja-JP')} に回答</span>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            {/* いいねボタン */}
+                                            <button
+                                                className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded ${
+                                                    answer.likedBy?.includes(currentUserId as string)
+                                                        ? 'bg-blue-100 text-blue-700'
+                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                                }`}
+                                                onClick={() => handleLikeAnswer(answer._id)}
+                                                disabled={!session}
                                             >
-                                                ベストアンサーに選ぶ
+                                                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.868.868L6 10.333z"></path></svg>
+                                                <span>いいね！ ({answer.likes || 0})</span>
                                             </button>
-                                        )}
+                                            {/* ベストアンサーに選ぶボタン */}
+                                            {isAuthor && !question.bestAnswer && (
+                                                <button
+                                                    className="bg-green-100 hover:bg-green-200 text-green-700 text-xs px-2.5 py-1 rounded"
+                                                    onClick={() => handleSetBestAnswer(answer._id)}
+                                                >
+                                                    ベストアンサーに選ぶ
+                                                </button>
+                                            )}
+                                            {/* 選択済みベストアンサーへの表示 (選択ボタンの代わり) */}
+                                            {isAuthor && question.bestAnswer === answer._id && (
+                                                <span className="text-green-700 text-xs font-medium">選択済み</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </li>
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-gray-600">まだ回答はありません。</p>
+                    <p className="text-gray-600 mb-8">まだ回答はありません。</p>
                 )}
 
-                {/* 回答投稿フォーム */}
-                <AnswerForm questionId={questionId} onAnswerPosted={fetchQuestionData} />
+                {/* 回答投稿フォーム (カードデザイン) */}
+                <div className="bg-white shadow rounded-lg p-6">
+                    <AnswerForm questionId={questionId} onAnswerPosted={fetchQuestionData} />
+                </div>
             </div>
         </main>
     );

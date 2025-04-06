@@ -22,14 +22,14 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50"> {/* Add sticky positioning */}
-      <nav className="container mx-auto flex flex-wrap items-center justify-between px-4 py-3 sm:px-6">
+      <nav className="container mx-auto flex items-center justify-between px-4 py-3 sm:px-6"> {/* Remove flex-wrap */}
         {/* Logo/Brand Name */}
         <Link href="/" className="text-xl font-bold text-gray-800 mr-4 shrink-0">
           Training Board
         </Link>
 
-        {/* Search Form */}
-        <div className="order-3 w-full sm:order-2 sm:w-auto sm:flex-grow sm:max-w-xs lg:max-w-md mt-2 sm:mt-0 sm:mr-4">
+        {/* Search Form - Takes available space */}
+        <div className="flex-grow mx-4 max-w-xl"> {/* Adjust classes for flexible width and max width */}
            <form onSubmit={handleSearchSubmit} className="relative">
              <input
                type="search"
@@ -53,13 +53,20 @@ export default function Header() {
         </div>
 
         {/* Auth Links/User Info */}
-        <div className="order-2 sm:order-3 flex items-center space-x-2 sm:space-x-4 shrink-0">
+        <div className="flex items-center space-x-2 sm:space-x-4 shrink-0"> {/* Remove order classes */}
           {loading && (
             <span className="text-sm text-gray-500">読み込み中...</span>
           )}
 
           {!loading && session?.user && (
             <>
+              {/* "質問する" ボタンを追加 */}
+              <Link
+                href="/questions/ask" // 質問投稿ページへのリンク
+                className="hidden sm:inline-block rounded bg-green-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-600 mr-2"
+              >
+                質問する
+              </Link>
               {/* Display User Image if available */}
               {session.user.image ? (
                  <Image
