@@ -54,8 +54,17 @@ export const authOptions: NextAuthOptions = {
     // セッションにユーザー情報を追加
     session: async ({ session, token }) => {
       if (token) {
-        session.user.id = token.id as string;
-        session.user.isAdmin = token.isAdmin as boolean;
+        if (session.user) {
+          session.user.id = token.id as string;
+          session.user.isAdmin = token.isAdmin as boolean;
+        } else {
+          session.user = {
+            id: token.id as string,
+            name: token.name as string,
+            email: token.email as string,
+            isAdmin: token.isAdmin as boolean,
+          };
+        }
       }
       return session;
     }
