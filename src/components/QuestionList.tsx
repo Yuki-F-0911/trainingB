@@ -216,10 +216,9 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
   }
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
-      {/* List Header: Sorting Options */}
-      <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-        <h2 className="text-lg font-semibold text-gray-700">質問一覧</h2>
+    <div className="space-y-6">
+      {/* Sorting Options */} 
+      <div className="flex justify-end items-center">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">並び替え:</span>
           <select
@@ -234,69 +233,48 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
         </div>
       </div>
 
-      {/* Question List Table/Rows */}
-      <ul>
+      {/* Question Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {data.questions.map((question) => (
-          <li key={question._id} className="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
-            <div className="flex items-center px-6 py-4">
-              {/* Author Avatar (optional) */}
-              {/* <div className="mr-4 shrink-0">
-                <span className="inline-block h-10 w-10 rounded-full bg-gray-200"></span>
-              </div> */} 
-              
-              {/* Main Content: Title, Tags, Author */}
-              <div className="flex-1 min-w-0">
-                <Link href={`/questions/${question._id}`} className="block group">
-                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 truncate mb-1">
-                    {question.title}
-                  </h3>
-                </Link>
-                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
-                  {question.tags && question.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {question.tags.slice(0, 3).map((tag) => ( // Show max 3 tags
-                        <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">
-                          {tag}
-                        </span>
-                      ))}
-                      {question.tags.length > 3 && (
-                         <span className="text-xs text-gray-400">...</span>
-                      )}
-                    </div>
+          <div key={question._id} className="bg-white rounded-lg shadow hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col">
+            <Link href={`/questions/${question._id}`} className="block p-5 flex-grow">
+              {/* Title */}
+              <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 mb-2 line-clamp-3">
+                {question.title}
+              </h3>
+              {/* Tags */}
+              {question.tags && question.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mb-3">
+                  {question.tags.slice(0, 3).map((tag) => (
+                    <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">
+                      {tag}
+                    </span>
+                  ))}
+                  {question.tags.length > 3 && (
+                    <span className="text-xs text-gray-400">...</span>
                   )}
-                  <span className="hidden sm:inline">・</span>
-                  <span>
-                    投稿者: {question.author?.name || question.author?.email?.split('@')[0] || '匿名'}
-                  </span>
-                  <span>・</span>
-                   <span>{new Date(question.createdAt).toLocaleDateString()}</span>
                 </div>
-              </div>
-
-              {/* Stats: Answers, Views (Views not implemented yet) */}
-              <div className="ml-4 flex shrink-0 items-center space-x-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1" title="回答数">
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                   </svg>
-                  <span>{question.answers?.length || 0}</span>
-                </div>
-                {/* <div className="flex items-center gap-1" title="閲覧数">
-                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                   </svg>
-                  <span>...</span> 
-                </div> */} 
-              </div>
+              )}
+            </Link>
+            {/* Footer: Author and Stats */}
+            <div className="border-t px-5 py-3 bg-gray-50 text-xs text-gray-500 flex justify-between items-center">
+               <span className="truncate">
+                 投稿者: {question.author?.name || question.author?.email?.split('@')[0] || '匿名'}
+               </span>
+               <div className="flex items-center gap-1 shrink-0 ml-2" title="回答数">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                 <span>{question.answers?.length || 0}</span>
+               </div>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
 
       {/* Pagination */} 
       {data.totalPages > 1 && (
-        <div className="px-6 py-4 border-t bg-gray-50">
+        <div className="mt-8">
           <nav className="flex justify-center items-center space-x-3">
             {data.currentPage > 1 ? (
               <Link href={createPageUrl(data.currentPage - 1)} className="px-4 py-2 border rounded hover:bg-gray-100">前へ</Link>

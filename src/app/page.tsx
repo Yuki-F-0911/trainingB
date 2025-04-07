@@ -12,7 +12,7 @@ export default function Home() {
   const { status } = useSession();
 
   return (
-    <div className="space-y-6">
+    <>
       {/* ページ上部のアクション（例：質問するボタン）- モバイル表示用 */}
       {status === 'authenticated' && (
         <div className="sm:hidden text-right mb-4">
@@ -25,8 +25,8 @@ export default function Home() {
         </div>
       )}
 
-      {/* 質問リストコンポーネント */}
+      {/* 質問リストコンポーネント (ラッパーdivを削除) */}
       <QuestionList fetchFromApi={true} />
-    </div>
+    </>
   );
 }
