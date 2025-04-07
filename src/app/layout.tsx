@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={`${inter.className} min-h-screen bg-gray-100`}>
+      <body className={`${inter.className} min-h-screen bg-red-200`}>
         <AuthProvider>
           <Header />
           <main className="container mx-auto px-4 py-8">
