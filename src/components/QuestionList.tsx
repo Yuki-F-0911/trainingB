@@ -62,10 +62,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  // 現在のページをURLから取得（デフォルトは1）
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  
-  // 並び替えオプションをURLから取得（デフォルトは新着順）
   const sortBy = searchParams.get('sort') as SortOption || 'newest';
   
   const [data, setData] = useState<ApiResponse | null>(null);
@@ -155,20 +152,17 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     } else {
       params.set('page', page.toString());
     }
-    
-    // ソートオプションを設定
     if (sort === 'newest') {
-      params.delete('sort'); // デフォルト値の場合はクエリパラメータから削除
+      params.delete('sort');
     } else {
       params.set('sort', sort);
     }
-    
     return `${pathname}?${params.toString()}`;
   };
 
   // 並び替え選択時の処理
   const handleSortChange = (sort: SortOption) => {
-    router.push(createPageUrl(1, sort)); // ソート変更時は1ページ目に戻す
+    router.push(createPageUrl(1, sort));
   };
 
   // ページネーションボタン生成ロジック
@@ -179,7 +173,6 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     const startPage = Math.max(1, data.currentPage - Math.floor(maxPagesToShow / 2));
     const endPage = Math.min(data.totalPages, startPage + maxPagesToShow - 1);
 
-    // 開始ページが1より大きい場合、最初のページへのリンクを追加
     if (startPage > 1) {
         pageNumbers.push(
             <Link key={1} href={createPageUrl(1)} className="px-4 py-2 border rounded hover:bg-gray-100">
@@ -190,30 +183,15 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
             pageNumbers.push(<span key="start-ellipsis" className="px-1 py-1">...</span>);
         }
     }
-
-    // 中間のページ番号リンク
     for (let i = startPage; i <= endPage; i++) {
         pageNumbers.push(
             i === data.currentPage ? (
-              <span
-                  key={i}
-                  className="px-4 py-2 border rounded bg-blue-500 text-white"
-              >
-                  {i}
-              </span>
+              <span key={i} className="px-4 py-2 border rounded bg-blue-500 text-white">{i}</span>
             ) : (
-              <Link
-                  key={i}
-                  href={createPageUrl(i)}
-                  className="px-4 py-2 border rounded hover:bg-gray-100"
-              >
-                  {i}
-              </Link>
+              <Link key={i} href={createPageUrl(i)} className="px-4 py-2 border rounded hover:bg-gray-100">{i}</Link>
             )
         );
     }
-
-    // 終了ページが総ページ数より小さい場合、最後のページへのリンクを追加
     if (endPage < data.totalPages) {
         if (endPage < data.totalPages - 1) {
             pageNumbers.push(<span key="end-ellipsis" className="px-1 py-1">...</span>);
@@ -227,24 +205,27 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     return pageNumbers;
   };
 
-  if (loading) return <p className="text-center mt-8">質問を読み込み中...</p>;
+  if (loading) return <p className="text-center mt-8 text-gray-500">質問を読み込み中...</p>;
   if (error) return <p className="text-center text-red-500 mt-8">エラー: {error}</p>;
-  
-  // データが無い場合のメッセージを明確化
   if (!data || data.questions.length === 0) {
-    return <p className="text-center mt-8 text-gray-500">現在表示できる質問がありません。</p>;
+    return (
+      <div className="bg-white shadow rounded-lg p-8 text-center">
+        <p className="text-gray-500">現在表示できる質問がありません。</p>
+      </div>
+    );
   }
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 className="text-2xl font-semibold">質問一覧</h2>
-        <div className="flex gap-2 items-center">
+    <div className="bg-white shadow rounded-lg overflow-hidden">
+      {/* List Header: Sorting Options */}
+      <div className="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+        <h2 className="text-lg font-semibold text-gray-700">質問一覧</h2>
+        <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">並び替え:</span>
           <select
             value={sortBy}
             onChange={(e) => handleSortChange(e.target.value as SortOption)}
-            className="border border-gray-300 rounded px-3 py-1.5 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="border border-gray-300 rounded px-2 py-1 text-sm bg-white shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="newest">新着順</option>
             <option value="most_answers">回答数順</option>
@@ -252,68 +233,84 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
           </select>
         </div>
       </div>
-      <ul className="space-y-5">
+
+      {/* Question List Table/Rows */}
+      <ul>
         {data.questions.map((question) => (
-          <li key={question._id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-            <Link href={`/questions/${question._id}`} className="block p-6 sm:p-8">
-              <h3 className="text-xl sm:text-2xl font-semibold text-blue-600 hover:underline mb-3">
-                {question.title}
-              </h3>
-              <div className="flex flex-wrap items-center text-sm text-gray-500 mb-4 gap-x-4 gap-y-1">
-                <span>
-                  投稿者: {question.author?.name || question.author?.email?.split('@')[0] || '匿名'}
-                </span>
-                <span>
-                  投稿日時: {new Date(question.createdAt).toLocaleString()}
-                </span>
-                <span>
-                  回答数: {question.answers?.length || 0}
-                </span>
-              </div>
-              {question.tags && question.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {question.tags.map((tag) => (
-                    <span key={tag} className="bg-gray-200 text-gray-700 px-2.5 py-1 rounded text-sm">
-                      {tag}
-                    </span>
-                  ))}
+          <li key={question._id} className="border-b last:border-b-0 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center px-6 py-4">
+              {/* Author Avatar (optional) */}
+              {/* <div className="mr-4 shrink-0">
+                <span className="inline-block h-10 w-10 rounded-full bg-gray-200"></span>
+              </div> */} 
+              
+              {/* Main Content: Title, Tags, Author */}
+              <div className="flex-1 min-w-0">
+                <Link href={`/questions/${question._id}`} className="block group">
+                  <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 truncate mb-1">
+                    {question.title}
+                  </h3>
+                </Link>
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+                  {question.tags && question.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {question.tags.slice(0, 3).map((tag) => ( // Show max 3 tags
+                        <span key={tag} className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded text-xs">
+                          {tag}
+                        </span>
+                      ))}
+                      {question.tags.length > 3 && (
+                         <span className="text-xs text-gray-400">...</span>
+                      )}
+                    </div>
+                  )}
+                  <span className="hidden sm:inline">・</span>
+                  <span>
+                    投稿者: {question.author?.name || question.author?.email?.split('@')[0] || '匿名'}
+                  </span>
+                  <span>・</span>
+                   <span>{new Date(question.createdAt).toLocaleDateString()}</span>
                 </div>
-              )}
-            </Link>
+              </div>
+
+              {/* Stats: Answers, Views (Views not implemented yet) */}
+              <div className="ml-4 flex shrink-0 items-center space-x-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1" title="回答数">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                   </svg>
+                  <span>{question.answers?.length || 0}</span>
+                </div>
+                {/* <div className="flex items-center gap-1" title="閲覧数">
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                     <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                   </svg>
+                  <span>...</span> 
+                </div> */} 
+              </div>
+            </div>
           </li>
         ))}
       </ul>
 
-      {data && data.totalPages > 1 && (
-        <nav className="mt-8 flex justify-center items-center space-x-3">
-          {data.currentPage > 1 ? (
-            <Link
-              href={createPageUrl(data.currentPage - 1)}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
-            >
-              前へ
-            </Link>
-          ) : (
-            <span className="px-4 py-2 border rounded text-gray-400 cursor-not-allowed">
-              前へ
-            </span>
-          )}
-
-          {renderPageNumbers()}
-
-          {data.currentPage < data.totalPages ? (
-            <Link
-              href={createPageUrl(data.currentPage + 1)}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
-            >
-              次へ
-            </Link>
-          ) : (
-            <span className="px-4 py-2 border rounded text-gray-400 cursor-not-allowed">
-              次へ
-            </span>
-          )}
-        </nav>
+      {/* Pagination */} 
+      {data.totalPages > 1 && (
+        <div className="px-6 py-4 border-t bg-gray-50">
+          <nav className="flex justify-center items-center space-x-3">
+            {data.currentPage > 1 ? (
+              <Link href={createPageUrl(data.currentPage - 1)} className="px-4 py-2 border rounded hover:bg-gray-100">前へ</Link>
+            ) : (
+              <span className="px-4 py-2 border rounded text-gray-400 cursor-not-allowed">前へ</span>
+            )}
+            {renderPageNumbers()}
+            {data.currentPage < data.totalPages ? (
+              <Link href={createPageUrl(data.currentPage + 1)} className="px-4 py-2 border rounded hover:bg-gray-100">次へ</Link>
+            ) : (
+              <span className="px-4 py-2 border rounded text-gray-400 cursor-not-allowed">次へ</span>
+            )}
+          </nav>
+        </div>
       )}
     </div>
   );
