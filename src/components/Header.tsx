@@ -27,7 +27,7 @@ export default function Header() {
           {/* Left Section: Logo and Navigation */}
           <div className="flex items-center space-x-8">
             <Link href="/" className="text-2xl font-bold text-gray-800">
-              Training Board
+              トレーニング掲示板
             </Link>
             {/* Add main navigation links here if needed */}
             {/* Example: */}
