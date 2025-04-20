@@ -5,6 +5,28 @@ const nextConfig = {
         // your project has ESLint errors.
         ignoreDuringBuilds: true,
     },
+    async headers() {
+        return [
+            {
+                source: '/robots.txt',
+                headers: [
+                    {
+                        key: 'Content-Type',
+                        value: 'text/plain',
+                    },
+                ],
+            },
+            {
+                source: '/sitemap.xml',
+                headers: [
+                    {
+                        key: 'Content-Type',
+                        value: 'application/xml',
+                    },
+                ],
+            },
+        ];
+    },
     // 他の設定があればここに追加
 };
 
