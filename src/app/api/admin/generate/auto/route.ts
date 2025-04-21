@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 
 // ランダムな待機時間を生成するヘルパー関数 (ミリ秒)
 // function getRandomDelay(minSeconds: number, maxSeconds: number): number {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
 import { model, generationConfig, safetySettings } from '@/lib/gemini'; // Gemini設定をインポート
@@ -19,9 +20,8 @@ function getRandomQuestionerPersonality() {
 export async function POST(request: Request) {
     // ★★★ 管理者認証を実装する必要あり ★★★
 
-    await dbConnect();
-
     try {
+        await dbConnect();
         const body = await request.json();
         const count = parseInt(body.count || '1', 10);
 

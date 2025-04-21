@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+export const runtime = 'nodejs';
 import dbConnect from '@/lib/dbConnect';
 import QuestionModel from '@/models/Question';
 import AnswerModel from '@/models/Answer';
@@ -29,10 +30,9 @@ function getRandomAnswererPersonality() {
 // POST: AIで複数の回答を生成
 export async function POST(request: Request) {
     // ★★★ 管理者認証を実装する必要あり ★★★
-
-    await dbConnect();
-
     try {
+        await dbConnect();
+
         const body = await request.json();
         const count = parseInt(body.count || '1', 10);
 
