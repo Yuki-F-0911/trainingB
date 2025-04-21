@@ -1,6 +1,32 @@
+# 全てのクローラーに対する基本設定
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /admin/
+Disallow: /dashboard/
+
+# サイトマップの場所
 Sitemap: https://www.training-board-test.com/sitemap.xml
 Sitemap: https://www.training-board-test.com/sitemap-main.xml
 Sitemap: https://www.training-board-test.com/sitemap-questions.xml
-Sitemap: https://www.training-board-test.com/sitemap-users.xml 
+Sitemap: https://www.training-board-test.com/sitemap-users.xml
+
+# Googleのクローラーに対する追加設定
+User-agent: Googlebot
+Allow: /questions/
+Allow: /users/
+Allow: /profile/
+
+# 画像クローラーに対する設定
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /public/
+
+# モバイルクローラーに対する設定
+User-agent: Googlebot-Mobile
+Allow: /
+
+# キャッシュの設定
+Crawl-delay: 10 
