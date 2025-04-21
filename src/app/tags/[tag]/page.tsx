@@ -18,7 +18,7 @@ export default function TagPage() {
     const params = useParams();
     const searchParams = useSearchParams();
     const tag = params?.tag ? decodeURIComponent(params.tag as string) : '';
-    const page = parseInt(searchParams.get('page') || '1', 10);
+    const page = parseInt(searchParams?.get('page') || '1', 10);
 
     const [questions, setQuestions] = useState<IQuestion[]>([]);
     const [loading, setLoading] = useState(true);
