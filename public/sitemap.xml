@@ -1,33 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.training-board-test.com/</loc>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://www.training-board-test.com/sitemap-main.xml</loc>
     <lastmod>2024-04-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://www.training-board-test.com/login</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.training-board-test.com/sitemap-questions.xml</loc>
     <lastmod>2024-04-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.training-board-test.com/register</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://www.training-board-test.com/sitemap-users.xml</loc>
     <lastmod>2024-04-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.training-board-test.com/dashboard</loc>
-    <lastmod>2024-04-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.training-board-test.com/admin</loc>
-    <lastmod>2024-04-15</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-</urlset> 
+  </sitemap>
+</sitemapindex> 
