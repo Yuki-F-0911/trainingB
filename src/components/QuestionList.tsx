@@ -62,8 +62,8 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const sortBy = searchParams.get('sort') as SortOption || 'newest';
+  const currentPage = parseInt(searchParams?.get('page') || '1', 10);
+  const sortBy = (searchParams?.get('sort') as SortOption) || 'newest';
   
   const [data, setData] = useState<ApiResponse | null>(null);
   const [loading, setLoading] = useState(fetchFromApi);
@@ -146,7 +146,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
 
   // クエリパラメータを更新する関数
   const createPageUrl = (page: number, sort: SortOption = sortBy) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(searchParams?.toString() || '');
     if (page <= 1) {
       params.delete('page');
     } else {
