@@ -7,15 +7,8 @@ import { NextResponse } from 'next/server';
 // この関数は不要になったので削除
 
 // 内部APIを呼び出す関数
-async function callInternalApi(endpoint: string, body: object) {
-    // Next.jsのAPIルートでは、絶対URLまたは Vercel 環境変数を指定する必要がある
-    // ローカル開発時と Vercel デプロイ時で動作するように調整
-    const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-        ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}` // Vercel環境変数 (公開用)
-        : process.env.VERCEL_URL
-            ? `https://${process.env.VERCEL_URL}` // Vercel環境変数 (内部用)
-            : 'http://localhost:3000'; // ローカル開発用フォールバック
-    const url = `${baseUrl}${endpoint}`;
+async function callInternalApi(request: Request, endpoint: string, body: object) {
+    const url = new URL(endpoint, request.url).toString();
 
     console.log(`[Auto Generate] Calling internal API: ${url} with body:`, body);
 
@@ -79,7 +72,7 @@ export async function GET(request: Request) {
     // await new Promise(resolve => setTimeout(resolve, questionDelay)); // 削除
 
     console.log("[Auto Generate] Generating 1 question...");
-    const questionResult = await callInternalApi('/api/admin/generate/questions', { count: 1 });
+    const questionResult = await callInternalApi(request, '/api/admin/generate/questions', { count: 1 });
     console.log("[Auto Generate] Question generation result:", questionResult);
 
     // --- 回答生成 ---
@@ -89,7 +82,7 @@ export async function GET(request: Request) {
 
     console.log("[Auto Generate] Generating 3 answers...");
     // 回答生成APIは回答が必要な質問を選ぶロジックを持っている想定
-    const answerResult = await callInternalApi('/api/admin/generate/answers', { count: 3 });
+    const answerResult = await callInternalApi(request, '/api/admin/generate/answers', { count: 3 });
     console.log("[Auto Generate] Answer generation result:", answerResult);
 
     console.log("[Auto Generate] Job finished successfully.");
