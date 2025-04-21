@@ -88,6 +88,17 @@ const nextConfig = {
             },
         ];
     },
+    // ドメインが apex → www に飛ぶリダイレクトもあれば追加
+    async redirects() {
+        return [
+            {
+                source: '/:path*',
+                has: [{ type: 'host', value: 'training-board-test.com' }],
+                destination: 'https://www.training-board-test.com/:path*',
+                permanent: true,
+            },
+        ];
+    },
     // 他の設定があればここに追加
 };
 

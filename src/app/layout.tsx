@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     title: "トレーニング掲示板 | ランニング・マラソンQ&A",
     description: "ランニングやマラソンに関する質問や回答を共有できる掲示板です。",
   },
+  alternates: {
+    canonical: 'https://www.training-board-test.com/',
+  },
 };
 
 export default function RootLayout({
