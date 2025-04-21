@@ -8,6 +8,15 @@ const nextConfig = {
     async headers() {
         return [
             {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'X-Robots-Tag',
+                        value: 'index, follow',
+                    },
+                ],
+            },
+            {
                 source: '/robots.txt',
                 headers: [
                     {
