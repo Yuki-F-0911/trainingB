@@ -93,7 +93,8 @@ let clientPromise: Promise<MongoClient>;
 
 // MongoClient の Promise をキャッシュし、未処理例外を防ぐ
 let client: MongoClient;
-let connectionPromise: Promise<MongoClient | null>;
+// connectionPromise は常に MongoClient を返すため null を含めない
+let connectionPromise: Promise<MongoClient>;
 if (process.env.NODE_ENV === 'development') {
   if (!global.mongoClientPromise) {
     client = new MongoClient(MONGODB_URI!);
@@ -108,7 +109,7 @@ if (process.env.NODE_ENV === 'development') {
       });
     global.mongoClientPromise = connectionPromise;
   }
-  clientPromise = global.mongoClientPromise;
+  clientPromise = global.mongoClientPromise!;
   // Ensure any rejected promise is caught to avoid unhandled rejections
   clientPromise.catch(err => console.error('MongoClientPromise unhandled error (development):', err));
 } else {
