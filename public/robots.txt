@@ -9,15 +9,15 @@ Disallow: /dashboard/
 
 # サイトマップの場所
 Sitemap: https://www.training-board-test.com/sitemap.xml
-Sitemap: https://www.training-board-test.com/sitemap-main.xml
-Sitemap: https://www.training-board-test.com/sitemap-questions.xml
-Sitemap: https://www.training-board-test.com/sitemap-users.xml
+# 以下のAPIエンドポイントは許可
+Allow: /api/sitemap
 
 # Googleのクローラーに対する追加設定
 User-agent: Googlebot
 Allow: /questions/
 Allow: /users/
 Allow: /profile/
+Allow: /api/sitemap
 
 # 画像クローラーに対する設定
 User-agent: Googlebot-Image
