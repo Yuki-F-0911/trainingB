@@ -2,12 +2,7 @@
   "crons": [
     {
       "path": "/api/admin/generate/auto",
-      "schedule": "0 0 * * *",
-      "env": {
-        "MONGODB_URI": "@mongodb-uri",
-        "GEMINI_API_KEY": "@gemini-api-key",
-        "CRON_SECRET": "@cron-secret"
-      }
+      "schedule": "0 0 * * *"
     }
   ],
   "headers": [
