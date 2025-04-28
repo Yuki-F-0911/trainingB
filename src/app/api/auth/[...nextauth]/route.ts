@@ -152,4 +152,6 @@ const authOptions: NextAuthOptions = {
 const handler = NextAuth(authOptions);
 
 // Export the handler for GET and POST requests
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };
+// Export authOptions for use in other API routes
+export { authOptions }; 

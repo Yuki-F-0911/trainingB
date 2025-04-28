@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import QuestionGenerator from '@/components/admin/QuestionGenerator';
 import AnswerGenerator from '@/components/admin/AnswerGenerator';
+import AnswerEditor from '@/components/admin/AnswerEditor';
 
 // ここにAI生成をトリガーするコンポーネントを後で追加します。
 // import AIService from '@/components/admin/AIService';
@@ -55,6 +56,8 @@ export default function AdminPage() {
           <QuestionGenerator />
           {/* 回答生成コンポーネント */}
           <AnswerGenerator />
+          {/* 回答編集コンポーネント */}
+          <AnswerEditor />
         </div>
 
         {/* その他の管理者機能 (オプション) */}
