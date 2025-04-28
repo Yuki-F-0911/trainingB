@@ -7,6 +7,18 @@ import Link from "next/link"; // Linkを追加
 import QuestionList from "@/components/QuestionList"; // QuestionList をインポート
 import { IQuestion } from '@/models/Question'; // IQuestion型をインポート
 import toast from 'react-hot-toast'; // トースト通知をインポート
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+};
 
 export default function Home() {
   const { status } = useSession();
