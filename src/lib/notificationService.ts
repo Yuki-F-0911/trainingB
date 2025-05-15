@@ -70,7 +70,7 @@ export async function notifyQuestionAuthorOfNewAnswer(
 
   // 通知を作成
   return createNotification({
-    recipientId: question.author,
+    recipientId: question.author._id,
     type: NotificationType.NEW_ANSWER,
     relatedQuestionId: questionId,
     relatedAnswerId: answerId,
