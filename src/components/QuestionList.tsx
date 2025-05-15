@@ -70,6 +70,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
   const [error, setError] = useState<string | null>(null);
   const [lastFetchedPage, setLastFetchedPage] = useState<number | null>(null);
   const [lastSortOption, setLastSortOption] = useState<SortOption | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // コンポーネントがアンマウントされたときにフェッチを中止
   useEffect(() => {
@@ -105,36 +106,55 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
         setLoading(true);
         setError(null);
         try {
-          console.log(`Fetching page ${currentPage} with sort option ${sortBy}...`); // デバッグ用ログ
-          
-          // ソートオプションをクエリに追加
           const response = await fetch(`/api/questions?page=${currentPage}&limit=10&sort=${sortBy}`, {
-            signal: currentController.signal
+            signal: currentController.signal,
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
           });
           
           if (!response.ok) {
-            throw new Error('Failed to fetch questions');
+            if (response.status === 404) {
+              throw new Error('ページが見つかりません');
+            }
+            if (response.status === 500) {
+              throw new Error('サーバーエラーが発生しました');
+            }
+            throw new Error('質問の取得に失敗しました');
           }
 
-          // レスポンスがJSON形式か確認
           const contentType = response.headers.get('content-type');
           if (!contentType || !contentType.includes('application/json')) {
-            throw new Error('Received non-JSON response from server');
+            throw new Error('サーバーからの応答が不正です');
           }
 
           const result: ApiResponse = await response.json();
+          
+          if (!result.questions || !Array.isArray(result.questions)) {
+            throw new Error('データの形式が不正です');
+          }
+
           setData(result);
-          setLastFetchedPage(currentPage); // 取得したページを記録
-          setLastSortOption(sortBy); // 取得した並び順を記録
+          setLastFetchedPage(currentPage);
+          setLastSortOption(sortBy);
+          setRetryCount(0);
         } catch (err: any) {
-          // AbortErrorの場合はエラーメッセージを表示しない
           if (err.name === 'AbortError') {
             console.log('Fetch aborted');
             return;
           }
           
-          setError(err.message || 'An error occurred');
-          toast.error('質問の読み込みに失敗しました。');
+          setError(err.message || 'エラーが発生しました');
+          toast.error(err.message || '質問の読み込みに失敗しました');
+          
+          // エラーが発生した場合、3回までリトライ
+          if (retryCount < 3) {
+            setRetryCount(prev => prev + 1);
+            setTimeout(() => {
+              fetchQuestions();
+            }, 1000 * Math.pow(2, retryCount)); // 指数バックオフ
+          }
         } finally {
           setLoading(false);
         }
@@ -142,7 +162,7 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
 
       fetchQuestions();
     }
-  }, [currentPage, propQuestions, fetchFromApi, lastFetchedPage, sortBy, lastSortOption]); // 依存配列にsortByとlastSortOptionを追加
+  }, [currentPage, propQuestions, fetchFromApi, lastFetchedPage, sortBy, lastSortOption, retryCount]);
 
   // クエリパラメータを更新する関数
   const createPageUrl = (page: number, sort: SortOption = sortBy) => {
@@ -205,12 +225,36 @@ export default function QuestionList({ questions: propQuestions = [], fetchFromA
     return pageNumbers;
   };
 
-  if (loading) return <p className="text-center mt-8 text-gray-500">質問を読み込み中...</p>;
-  if (error) return <p className="text-center text-red-500 mt-8">エラー: {error}</p>;
-  if (!data || data.questions.length === 0) {
+  if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg p-8 text-center">
-        <p className="text-gray-500">現在表示できる質問がありません。</p>
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">{error}</p>
+        <button
+          onClick={() => {
+            setError(null);
+            setRetryCount(0);
+            router.refresh();
+          }}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          再試行
+        </button>
+      </div>
+    );
+  }
+
+  if (!data || !data.questions || data.questions.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">質問が見つかりませんでした</p>
       </div>
     );
   }

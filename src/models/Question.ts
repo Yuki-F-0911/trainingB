@@ -1,13 +1,17 @@
 import mongoose, { Schema, Document, models, Model, Types } from 'mongoose';
 
 // Question ドキュメントのインターフェース定義
-export interface IQuestion extends Document {
-  _id: mongoose.Types.ObjectId;
+export interface IQuestion {
+  _id: Types.ObjectId;
   title: string;
   content: string;
-  author?: Types.ObjectId | null; // Userへの参照、Nullable
-  answers: Types.ObjectId[]; // Answerへの参照配列
-  tags: string[]; // tags フィールドを追加
+  author: {
+    _id: Types.ObjectId;
+    name?: string;
+    email: string;
+  } | null;
+  answers?: any[];
+  tags: string[];
   isAIGenerated: boolean;
   aiPersonality?: string;
   bestAnswer?: Types.ObjectId; // ベストアンサーへの参照
