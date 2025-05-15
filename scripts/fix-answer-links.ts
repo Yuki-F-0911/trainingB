@@ -52,7 +52,7 @@ async function fixAnswerLinks() {
           // より厳密に確認したい場合は更新前後の answers 配列を比較する
           console.log(` -> Question ${questionId} link checked/updated for Answer ${answerId}.`);
           // 簡単なチェック: 更新後の answers 配列に ID が含まれているか
-          if (updateResult.answers.map(String).includes(String(answerId))) {
+          if (updateResult.answers && updateResult.answers.map(String).includes(String(answerId))) {
              // updateResult は更新後のドキュメントなので、更新された or もともとあった
              // ここでは簡易的に updatedCount に含める
              updatedCount++;
