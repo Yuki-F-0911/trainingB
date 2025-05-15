@@ -1,32 +1,31 @@
-"use client"; // クライアントコンポーネントにする
+import { Metadata } from 'next';
+import QuestionList from "@/components/QuestionList";
 
-import { useState, useEffect } from 'react'; // useEffectも追加 
-import { useSession, signIn, signOut } from "next-auth/react";
-import Link from "next/link"; // Linkを追加
-// import QuestionForm from "@/components/QuestionForm"; // QuestionForm のインポートをコメントアウトまたは削除
-import QuestionList from "@/components/QuestionList"; // QuestionList をインポート
-import { IQuestion } from '@/models/Question'; // IQuestion型をインポート
-import toast from 'react-hot-toast'; // トースト通知をインポート
+export const metadata: Metadata = {
+  title: "トレーニング掲示板 | ランニング・マラソンQ&A",
+  description: "ランニングやマラソンに関する質問や回答を共有できる掲示板です。初心者から上級者まで、ランニングに関するあらゆる疑問にお答えします。",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    }
+  },
+  openGraph: {
+    title: "トレーニング掲示板 | ランニング・マラソンQ&A",
+    description: "ランニングやマラソンに関する質問や回答を共有できる掲示板です。",
+    type: "website",
+    locale: "ja_JP",
+    siteName: "トレーニング掲示板",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "トレーニング掲示板 | ランニング・マラソンQ&A",
+    description: "ランニングやマラソンに関する質問や回答を共有できる掲示板です。",
+  },
+};
 
 export default function Home() {
-  const { status } = useSession();
-
-  return (
-    <>
-      {/* ページ上部のアクション（例：質問するボタン）- モバイル表示用 */}
-      {status === 'authenticated' && (
-        <div className="sm:hidden text-right mb-4">
-          <Link
-             href="/questions/ask"
-             className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
-           >
-             質問する
-           </Link>
-        </div>
-      )}
-
-      {/* 質問リストコンポーネント (ラッパーdivを削除) */}
-      <QuestionList fetchFromApi={true} />
-    </>
-  );
+  return <QuestionList fetchFromApi={true} />;
 }
