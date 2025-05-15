@@ -77,7 +77,7 @@ export async function POST(request: Request) {
           // 質問が見つからなかった場合 (削除されたなど)
           console.warn(`Warning: Question ${questionId} not found when trying to push answer ${newAnswer._id}. Answer was saved but link failed.`);
           // ここで回答を削除するなどの補償処理も検討可能
-      } else if (!updatedQuestion.answers.map(String).includes(String(newAnswer._id))) {
+      } else if (updatedQuestion.answers && !updatedQuestion.answers.map(String).includes(String(newAnswer._id))) {
           // 何らかの理由で $push が失敗した場合
           console.warn(`Warning: Failed to push answer ${newAnswer._id} to question ${questionId}. Answer was saved but link might have failed.`);
           // エラー詳細を調査する必要があるかもしれない
