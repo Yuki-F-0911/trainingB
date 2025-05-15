@@ -1,83 +1,121 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import dbConnect from "./dbConnect";
-import UserModel from "@/models/User";
-import bcrypt from "bcryptjs";
+import GoogleProvider from "next-auth/providers/google";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import { clientPromise } from "@/lib/dbConnect";
+import UserModel, { IUser } from "@/models/User";
+import mongoose, { models } from 'mongoose';
+import { DefaultSession, DefaultUser } from "next-auth";
+import { DefaultJWT } from "next-auth/jwt";
 
-// NextAuthの設定
+declare module "next-auth" {
+  interface User extends DefaultUser {
+    isAdmin?: boolean;
+  }
+  interface Session extends DefaultSession {
+    user?: User & { id?: string | null };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends DefaultJWT {
+    id?: string;
+    isAdmin?: boolean;
+  }
+}
+
 export const authOptions: NextAuthOptions = {
+  adapter: MongoDBAdapter(clientPromise),
   providers: [
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        email: { label: "Email", type: "email", placeholder: "email@example.com" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          return null;
+          throw new Error("メールアドレスとパスワードを入力してください。");
         }
 
-        await dbConnect();
+        const User = models.User as mongoose.Model<IUser> || mongoose.model<IUser>('User', UserModel.schema);
 
-        // ユーザーを検索 (passwordフィールドを明示的に取得)
-        const user = await UserModel.findOne({ email: credentials.email }).select("+password");
-        if (!user || !user.password) {
-          return null;
+        const user = await User.findOne({ email: credentials.email }).select('+password');
+
+        if (!user) {
+          throw new Error("指定されたメールアドレスのユーザーは見つかりません。");
+        }
+        if (!user.password) {
+          throw new Error("パスワードが設定されていません。Googleログインなどをお試しください。");
         }
 
-        // パスワードを比較
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) {
-          return null;
+        const isPasswordValid = await user.comparePassword(credentials.password);
+
+        if (!isPasswordValid) {
+          throw new Error("パスワードが正しくありません。");
         }
 
-        // パスワードなしのユーザー情報を返す
         return {
           id: user._id.toString(),
           email: user.email,
           name: user.name,
-          isAdmin: user.isAdmin,
+          image: null,
+          isAdmin: user.isAdmin
         };
+      },
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        }
       }
-    })
+    }),
   ],
+  session: {
+    strategy: "jwt",
+  },
+  pages: {
+    signIn: '/login',
+    signOut: '/',
+    error: '/login',
+  },
   callbacks: {
-    // JWTにユーザー情報を追加
-    jwt: async ({ token, user }) => {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
-        token.isAdmin = user.isAdmin;
+        const u = user as IUser & { isAdmin?: boolean };
+        if (u.isAdmin !== undefined) {
+          token.isAdmin = u.isAdmin;
+        }
+      }
+      if (account?.provider === "google") {
+        token.accessToken = account.access_token;
       }
       return token;
     },
-    // セッションにユーザー情報を追加
-    session: async ({ session, token }) => {
-      if (token) {
-        if (session.user) {
-          session.user.id = token.id as string;
-          session.user.isAdmin = token.isAdmin as boolean;
-        } else {
-          session.user = {
-            id: token.id as string,
-            name: token.name as string,
-            email: token.email as string,
-            isAdmin: token.isAdmin as boolean,
-          };
+    async session({ session, token }) {
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        if (token.isAdmin !== undefined) {
+          (session.user as any).isAdmin = token.isAdmin as boolean;
         }
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
     }
   },
-  pages: {
-    signIn: "/login",
-    error: "/login",
-  },
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30日
-  },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };
 
 export default authOptions; 
