@@ -40,6 +40,12 @@ async function fixAnswerLinks() {
           { new: true } // 更新結果は不要なら削除しても良い
         );
 
+        if (updateResult && updateResult.answers && Array.isArray(updateResult.answers)) {
+          if (updateResult.answers.map(String).includes(String(answerId))) {
+            updatedCount++;
+          }
+        }
+
         if (updateResult) {
           // 更新が成功したか、もともと含まれていたかを確認
           // $addToSet は追加した場合も、既にあって追加しなかった場合もドキュメントを返す
