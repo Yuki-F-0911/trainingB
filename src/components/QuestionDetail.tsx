@@ -6,8 +6,21 @@ import { useSession } from 'next-auth/react';
 import { IQuestion } from '@/models/Question';
 import { formatDate } from '@/lib/utils';
 
+// シリアライズされた質問データの型を定義
+type SerializedQuestion = Omit<IQuestion, '_id' | 'author' | 'bestAnswer' | 'createdAt' | 'updatedAt'> & {
+  _id: string;
+  author: {
+    _id: string;
+    name?: string;
+    email: string;
+  } | null;
+  bestAnswer: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 interface Props {
-  question: IQuestion;
+  question: SerializedQuestion;
 }
 
 export default function QuestionDetail({ question }: Props) {
