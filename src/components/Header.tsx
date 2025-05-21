@@ -21,80 +21,82 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Left Section: Logo and Navigation */}
-          <div className="flex items-center space-x-8">
-            <Link href="/" className="text-2xl font-bold text-gray-800">
-              トレーニング掲示板
-            </Link>
-            {/* Add main navigation links here if needed */}
-            {/* Example: */}
-            {/* <nav className="hidden md:flex space-x-4">
-              <Link href="/categories" className="text-gray-600 hover:text-gray-900">カテゴリ</Link>
-              <Link href="/tags" className="text-gray-600 hover:text-gray-900">タグ</Link>
-            </nav> */}
-          </div>
-
-          {/* Center Section: Search Bar */}
-          <div className="flex-1 px-4 lg:px-12">
-            <form onSubmit={handleSearchSubmit} className="relative w-full max-w-lg mx-auto">
-              <input
-                type="search"
-                placeholder="質問を検索..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-4 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
-              />
-              <button
-                type="submit"
-                className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-gray-400 hover:text-gray-600"
-                aria-label="検索"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
-              </button>
-            </form>
-          </div>
-
-          {/* Right Section: Actions and User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Ask Question Button (Visible when logged in) */}
-            {status === 'authenticated' && (
-              <Link
-                href="/questions/ask"
-                className="hidden sm:inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-              >
-                質問する
+    <header className="bg-white shadow-sm sticky top-0 z-50 w-full">
+      <div className="w-full">
+        <div className="container mx-auto px-4">
+          <div className="flex h-16 items-center justify-between">
+            {/* Left Section: Logo and Navigation */}
+            <div className="flex items-center space-x-8">
+              <Link href="/" className="text-2xl font-bold text-gray-800">
+                トレーニング掲示板
               </Link>
-            )}
+              {/* Add main navigation links here if needed */}
+              {/* Example: */}
+              {/* <nav className="hidden md:flex space-x-4">
+                <Link href="/categories" className="text-gray-600 hover:text-gray-900">カテゴリ</Link>
+                <Link href="/tags" className="text-gray-600 hover:text-gray-900">タグ</Link>
+              </nav> */}
+            </div>
 
-            {/* User Menu / Login/Signup */}
-            <div className="relative">
-              {loading && (
-                <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+            {/* Center Section: Search Bar */}
+            <div className="flex-1 px-4 lg:px-12">
+              <form onSubmit={handleSearchSubmit} className="relative w-full max-w-lg mx-auto">
+                <input
+                  type="search"
+                  placeholder="質問を検索..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full rounded-full border border-gray-300 bg-gray-50 py-2 pl-4 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                />
+                <button
+                  type="submit"
+                  className="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-gray-400 hover:text-gray-600"
+                  aria-label="検索"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+
+            {/* Right Section: Actions and User Menu */}
+            <div className="flex items-center space-x-4">
+              {/* Ask Question Button (Visible when logged in) */}
+              {status === 'authenticated' && (
+                <Link
+                  href="/questions/ask"
+                  className="hidden sm:inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                >
+                  質問する
+                </Link>
               )}
-              {!loading && session?.user && (
-                <MenuButton session={session} />
-              )}
-              {!loading && !session?.user && (
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => signIn()}
-                    className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
-                  >
-                    ログイン
-                  </button>
-                  <Link
-                    href="/signup"
-                    className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200"
-                  >
-                    新規登録
-                  </Link>
-                </div>
-              )}
+
+              {/* User Menu / Login/Signup */}
+              <div className="relative">
+                {loading && (
+                  <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse"></div>
+                )}
+                {!loading && session?.user && (
+                  <MenuButton session={session} />
+                )}
+                {!loading && !session?.user && (
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => signIn()}
+                      className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                    >
+                      ログイン
+                    </button>
+                    <Link
+                      href="/signup"
+                      className="rounded-md bg-gray-100 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200"
+                    >
+                      新規登録
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
