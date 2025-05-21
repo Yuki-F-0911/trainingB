@@ -72,12 +72,12 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${inter.className} min-h-screen bg-gray-50 flex flex-col`}>
+      <body className={`${inter.className} min-h-screen bg-gray-50`}>
         <AuthProvider>
-          <div className="flex flex-col min-h-screen w-full">
+          <div className="flex flex-col min-h-screen">
             <Header />
-            <main className="flex-grow w-full">
-              <div className="container mx-auto px-4 py-8">
+            <main className="flex-grow">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <Toaster position="top-center" />
                 {children}
               </div>
