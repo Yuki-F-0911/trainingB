@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { IQuestion } from '@/models/Question';
-import { formatDate } from '@//lib/utils';
+import { formatDate } from '@/lib/utils';
 
 interface Props {
   question: IQuestion;
@@ -38,6 +38,9 @@ export default function QuestionDetail({ question }: Props) {
     }
   };
 
+  // tagsが存在しない場合は空配列を使用
+  const tags = Array.isArray(question.tags) ? question.tags : [];
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="bg-white shadow rounded-lg p-6">
@@ -69,7 +72,7 @@ export default function QuestionDetail({ question }: Props) {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {question.tags.map((tag) => (
+          {tags.map((tag) => (
             <span
               key={tag}
               className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, models, Model, Types } from 'mongoose';
 
 // Question ドキュメントのインターフェース定義
-export interface IQuestion {
+export interface IQuestion extends Document {
   _id: Types.ObjectId;
   title: string;
   content: string;
@@ -10,11 +10,11 @@ export interface IQuestion {
     name?: string;
     email: string;
   } | null;
-  answers?: any[];
+  answers: string[];
   tags: string[];
   isAIGenerated: boolean;
   aiPersonality?: string;
-  bestAnswer?: Types.ObjectId; // ベストアンサーへの参照
+  bestAnswer: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -24,45 +24,47 @@ const QuestionSchema: Schema<IQuestion> = new Schema(
   {
     title: {
       type: String,
-      required: [true, 'Title is required.'],
+      required: [true, 'タイトルは必須です'],
       trim: true,
+      maxlength: [200, 'タイトルは200文字以内で入力してください']
     },
     content: {
       type: String,
-      required: [true, 'Content is required.'],
+      required: [true, '内容は必須です'],
+      trim: true
     },
     author: {
-      type: Schema.Types.ObjectId,
-      ref: 'User', // Userモデルへの参照
-      default: null, // デフォルトはnull（AI生成などの場合）
-    },
-    answers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Answer', // Answerモデルへの参照
+      type: {
+        _id: Schema.Types.ObjectId,
+        name: String,
+        email: String
       },
-    ],
-    tags: {
-      type: [String], // 文字列の配列
-      default: [], // デフォルトは空配列
-      // 必要に応じてインデックスを追加
-      // index: true,
+      required: true
     },
+    answers: [{
+      type: String,
+      ref: 'Answer'
+    }],
+    tags: [{
+      type: String,
+      trim: true
+    }],
     isAIGenerated: {
       type: Boolean,
-      default: false,
+      default: false
     },
     aiPersonality: {
       type: String,
+      trim: true
     },
     bestAnswer: {
       type: Schema.Types.ObjectId,
-      ref: 'Answer', // Answerモデルへの参照
-      default: null, // デフォルトはnull
-    },
+      ref: 'Answer',
+      default: null
+    }
   },
   {
-    timestamps: true, // createdAt と updatedAt を自動的に管理
+    timestamps: true
   }
 );
 

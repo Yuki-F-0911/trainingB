@@ -5,6 +5,12 @@ const nextConfig = {
         // your project has ESLint errors.
         ignoreDuringBuilds: true,
     },
+    // サーバーコンポーネントのエラー詳細を表示
+    logging: {
+        fetches: {
+            fullUrl: true
+        }
+    },
     async headers() {
         return [
             {
@@ -13,6 +19,15 @@ const nextConfig = {
                     {
                         key: 'X-Robots-Tag',
                         value: 'index, follow',
+                    },
+                ],
+            },
+            {
+                source: '/_next/static/css/:path*',
+                headers: [
+                    {
+                        key: 'Cache-Control',
+                        value: 'public, max-age=31536000, immutable',
                     },
                 ],
             },
@@ -95,7 +110,7 @@ const nextConfig = {
                 source: '/:path*',
                 has: [{ type: 'host', value: 'training-board-test.com' }],
                 destination: 'https://www.training-board-test.com/:path*',
-                permanent: true,
+                permanent: false,
             },
         ];
     },
