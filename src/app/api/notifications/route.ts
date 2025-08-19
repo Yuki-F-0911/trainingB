@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth';
 import { getUserNotifications } from '@/lib/notificationService';
 import { authOptions } from '@/lib/auth';
 
+// 動的ルートとして明示的に設定
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 // 通知一覧を取得するAPI
 export async function GET(request: Request) {
   try {

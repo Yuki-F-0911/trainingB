@@ -39,7 +39,9 @@ const QuestionSchema: Schema<IQuestion> = new Schema(
         name: String,
         email: String
       },
-      required: true
+      required: function(this: IQuestion) {
+        return !this.isAIGenerated; // AI生成の場合は必須としない
+      }
     },
     answers: [{
       type: String,

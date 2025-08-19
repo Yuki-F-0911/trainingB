@@ -65,9 +65,37 @@ export default async function QuestionPage({ params }: Props) {
     }
 
     return (
-      <ErrorBoundary fallback={<ErrorFallback />}>
-        <QuestionDetail question={question} />
-      </ErrorBoundary>
+      <>
+        {/* 構造化データ */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Question",
+              "name": question.title,
+              "text": question.content,
+              "dateCreated": question.createdAt,
+              "dateModified": question.updatedAt || question.createdAt,
+              "author": {
+                "@type": "Person",
+                "name": question.author?.name || "匿名ユーザー"
+              },
+              "answerCount": question.answers?.length || 0,
+              "url": `https://www.training-board-test.com/questions/${question.id}`,
+              "mainEntity": {
+                "@type": "Question",
+                "name": question.title,
+                "text": question.content
+              }
+            })
+          }}
+        />
+        
+        <ErrorBoundary fallback={<ErrorFallback />}>
+          <QuestionDetail question={question} />
+        </ErrorBoundary>
+      </>
     );
   } catch (error) {
     console.error('Error loading question:', error);

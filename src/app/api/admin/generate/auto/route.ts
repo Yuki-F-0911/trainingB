@@ -9,7 +9,8 @@ export const runtime = 'nodejs';
 
 // 内部APIを呼び出す関数
 async function callInternalApi(request: Request, endpoint: string, body: object) {
-    const url = new URL(endpoint, request.url).toString();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.training-board-test.com';
+    const url = `${baseUrl}${endpoint}`;
 
     console.log(`[Auto Generate] Calling internal API: ${url} with body:`, body);
 

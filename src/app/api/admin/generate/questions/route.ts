@@ -69,6 +69,7 @@ export async function POST(request: Request) {
                 author: null, // AI生成なので null
                 isAIGenerated: true,
                 aiPersonality: personality.name,
+                __skipValidation: true
             });
             await newQuestion.save();
             generatedQuestions.push(newQuestion);

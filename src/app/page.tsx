@@ -27,5 +27,32 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-  return <QuestionList fetchFromApi={true} />;
+  return (
+    <>
+      {/* 構造化データ */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "トレーニング掲示板",
+            "description": "ランニングやマラソンに関する質問や回答を共有できる掲示板",
+            "url": "https://www.training-board-test.com",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://www.training-board-test.com/search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "トレーニング掲示板"
+            }
+          })
+        }}
+      />
+      
+      <QuestionList fetchFromApi={true} />
+    </>
+  );
 }
