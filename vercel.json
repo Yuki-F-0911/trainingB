@@ -54,30 +54,11 @@
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "index, follow" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "index, follow"
+        }
       ]
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
-    },
-    {
-      "source": "/sitemap.xml",
-      "destination": "/sitemap.xml"
-    },
-    {
-      "source": "/sitemap-main.xml",
-      "destination": "/sitemap-main.xml"
-    },
-    {
-      "source": "/sitemap-questions.xml",
-      "destination": "/sitemap-questions.xml"
-    },
-    {
-      "source": "/sitemap-users.xml",
-      "destination": "/sitemap-users.xml"
-    }
   ]
-} 
+}
